@@ -55,7 +55,10 @@ fn main() {
         }
     ");
 
-    println!("OpenGL version: {:?}.{:?}", context.major(), context.minor());
+    println!(
+        "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
+        context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
+    );
 
     let mut program = context.new_program();
     program.set(vertex, fragment);

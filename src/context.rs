@@ -1,4 +1,5 @@
 use collections::vec::Vec;
+use collections::string::String;
 
 use gl;
 use gl::types::*;
@@ -17,10 +18,12 @@ static LOWP: &'static str = "lowp";
 
 #[derive(Debug)]
 pub struct Context {
-    version_string: String,
+    version: String,
 
     major: usize,
     minor: usize,
+    glsl_major: usize,
+    glsl_minor: usize,
 
     extenstions: Vec<String>,
 
@@ -72,10 +75,12 @@ impl Context {
 
     pub fn new() -> Self {
         let mut context = Context {
-            version_string: String::new(),
+            version: String::new(),
 
             major: 0,
             minor: 0,
+            glsl_major: 0,
+            glsl_minor: 0,
 
             extenstions: Vec::new(),
 
@@ -131,10 +136,13 @@ impl Context {
 
     pub fn major(&self) -> usize { self.major }
     pub fn minor(&self) -> usize { self.minor }
+    pub fn glsl_major(&self) -> usize { self.glsl_major }
+    pub fn glsl_minor(&self) -> usize { self.glsl_minor }
 
     pub fn reset(&mut self) -> &mut Self {
 
-        self.version_string.clear();
+        self.version.clear();
+
         self.extenstions.clear();
 
         self.clear_color[0] = 0f32;
@@ -619,9 +627,9 @@ impl Context {
 
         unsafe {
             let ptr = gl::GetString(gl::VERSION);
-            string_from_ptr(ptr as usize, &mut self.version_string);
+            string_from_ptr(ptr as usize, &mut self.version);
 
-            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version_string.as_str()).unwrap();
+            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version.as_str()).unwrap();
 
             let mut major = cap.at(1).unwrap_or("3").parse::<i32>().unwrap();
             let mut minor = cap.at(2).unwrap_or("1").parse::<i32>().unwrap();
@@ -634,6 +642,12 @@ impl Context {
             }
 
             parse_extenstions(&mut self.extenstions, self.major);
+
+            let mut glsl_major = 0;
+            let mut glsl_minor = 0;
+            get_glsl_version(self.major, self.minor, &mut glsl_major, &mut glsl_minor);
+            self.glsl_major = glsl_major;
+            self.glsl_minor = glsl_minor;
 
             let mut max_textures = 0;
             gl::GetIntegerv(gl::MAX_TEXTURE_IMAGE_UNITS, &mut max_textures);
@@ -706,5 +720,25 @@ unsafe fn parse_extenstions(extenstions: &mut Vec<String>, major_version: usize)
         for extenstion in string.split_whitespace() {
             extenstions.push(String::from(extenstion));
         }
+    }
+}
+
+fn get_glsl_version(major: usize, minor: usize, glsl_major: &mut usize, glsl_minor: &mut usize) {
+    if major <= 3 && minor <= 2 {
+        *glsl_major = 1;
+        *glsl_minor = if major == 3 && minor == 2 {
+            5
+        } else if major == 3 && minor == 1 {
+            4
+        } else if major == 3 && minor == 0 {
+            3
+        } else if major == 2 && minor == 1 {
+            2
+        } else {
+            1
+        }
+    } else {
+        *glsl_major = major;
+        *glsl_minor = minor;
     }
 }

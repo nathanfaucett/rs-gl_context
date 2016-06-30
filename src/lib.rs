@@ -1,8 +1,7 @@
-//#![no_std]
+#![no_std]
 #![feature(collections)]
 
 
-extern crate core;
 extern crate collections;
 
 extern crate num;
