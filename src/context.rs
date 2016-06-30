@@ -623,8 +623,8 @@ impl Context {
 
             let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version_string.as_str()).unwrap();
 
-            let mut major = cap.at(1).unwrap_or("2").parse::<i32>().unwrap();
-            let mut minor = cap.at(2).unwrap_or("0").parse::<i32>().unwrap();
+            let mut major = cap.at(1).unwrap_or("3").parse::<i32>().unwrap();
+            let mut minor = cap.at(2).unwrap_or("1").parse::<i32>().unwrap();
 
             if major > 2 {
                 gl::GetIntegerv(gl::MAJOR_VERSION, &mut major);
