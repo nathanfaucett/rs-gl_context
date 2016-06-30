@@ -46,19 +46,19 @@ impl Program {
     pub fn set_uniform(&mut self, name: String, context: &Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(&name) {
             Some(ref mut uniform) => uniform.set(context, value, force),
-            None => false,
+            None => panic!("No uniform named {:?} found", name),
         }
     }
     pub fn set_uniform_unchecked(&mut self, name: String, context: &Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(&name) {
             Some(ref mut uniform) => uniform.set_unchecked(context, value, force),
-            None => false,
+            None => panic!("No uniform named {:?} found", name),
         }
     }
     pub fn set_attribute(&mut self, name: String, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(&name) {
             Some(ref attribute) => attribute.set(context, buffer, offset, force),
-            None => false,
+            None => panic!("No attribute named {:?} found", name),
         }
     }
 
@@ -105,12 +105,18 @@ fn parse_uniforms(program: GLuint, uniforms: &mut BTreeMap<String, Box<Uniform>>
             location = gl::GetUniformLocation(program, buf_ptr);
         }
 
-        let name = match String::from_utf8(buf) {
+        let mut name = match String::from_utf8(buf) {
             Ok(string) => string,
             Err(vec) => panic!("Could not convert uniform name from buffer: {:?}", vec)
         };
 
-        uniforms.insert(name.clone(), new_uniform(name, kind, location as usize));
+        if name.chars().nth(name.len() - 1).expect("Unexpected empty uniform name") == ']' {
+            name.pop();
+            name.pop();
+            name.pop();
+        }
+
+        uniforms.insert(name.clone(), new_uniform(name, kind, size as usize, location as usize));
     }
 }
 
@@ -142,7 +148,7 @@ fn parse_attributes(program: GLuint, attributes: &mut BTreeMap<String, Box<Attri
             Err(vec) => panic!("Could not convert attribute name from buffer: {:?}", vec)
         };
 
-        attributes.insert(name.clone(), new_attribute(name, kind, location as usize));
+        attributes.insert(name.clone(), new_attribute(name, kind, size as usize, location as usize));
     }
 }
 

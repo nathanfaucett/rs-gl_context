@@ -30,6 +30,8 @@ fn main() {
         uniform mat4 projection;
         uniform mat4 model_view;
 
+        uniform vec2 stuff[2];
+
         uniform vec2 offset;
 
         attribute vec3 position;
@@ -38,7 +40,7 @@ fn main() {
         varying vec2 v_uv;
 
         void main() {
-            gl_Position = projection * model_view * vec4(position, 1.0);
+            gl_Position = projection * model_view * vec4(position, stuff[1][1]);
             v_uv = offset + uv;
         }
     ");
@@ -127,6 +129,7 @@ fn main() {
         program.set_attribute(String::from("uv"), &mut context, &buffer, 3, false);
 
         program.set_uniform_unchecked(String::from("offset"), &mut context, &offset, false);
+        program.set_uniform(String::from("stuff"), &mut context, &[[1f32, 1f32], [1f32, 1f32]], false);
         program.set_uniform(String::from("projection"), &mut context, &perspective_matrix, false);
         program.set_uniform_unchecked(String::from("model_view"), &mut context, &model_view, false);
 

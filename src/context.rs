@@ -691,7 +691,7 @@ impl Context {
 }
 
 unsafe fn string_from_ptr(ptr: usize, string: &mut String) {
-    let mut i = ptr as usize;
+    let mut i = ptr;
     loop {
         let ch = *(i as *const u8);
         if ch != 0 {

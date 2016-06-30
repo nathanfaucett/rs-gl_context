@@ -11,6 +11,7 @@ use buffer::Buffer;
 pub trait Attribute: Debug {
     fn name(&self) -> String;
     fn kind(&self) -> GLenum;
+    fn size(&self) -> usize;
     fn location(&self) -> usize;
     fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool;
 }
@@ -22,13 +23,15 @@ macro_rules! create_attribute_struct {
         pub struct $t {
             name: String,
             kind: GLenum,
+            size: usize,
             location: usize,
         }
         impl $t {
-            pub fn new(name: String, kind: GLenum, location: usize) -> Self {
+            pub fn new(name: String, kind: GLenum, size: usize, location: usize) -> Self {
                 $t {
                     name: name,
                     kind: kind,
+                    size: size,
                     location: location,
                 }
             }
@@ -36,6 +39,7 @@ macro_rules! create_attribute_struct {
         impl Attribute for $t {
             fn name(&self) -> String { self.name.clone() }
             fn kind(&self) -> GLenum { self.kind }
+            fn size(&self) -> usize { self.size }
             fn location(&self) -> usize { self.location }
             fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
                 let kind_size = buffer.kind_size();
@@ -55,30 +59,41 @@ macro_rules! create_attribute_struct {
     );
 }
 
-create_attribute_struct!(Attribute1i, 1, gl::INT);
 create_attribute_struct!(Attribute1f, 1, gl::FLOAT);
-create_attribute_struct!(Attribute2i, 2, gl::INT);
+create_attribute_struct!(Attribute1b, 1, gl::BOOL);
+create_attribute_struct!(Attribute1i, 1, gl::INT);
+
 create_attribute_struct!(Attribute2f, 2, gl::FLOAT);
-create_attribute_struct!(Attribute3i, 3, gl::INT);
+create_attribute_struct!(Attribute2b, 2, gl::BOOL);
+create_attribute_struct!(Attribute2i, 2, gl::INT);
+
 create_attribute_struct!(Attribute3f, 3, gl::FLOAT);
-create_attribute_struct!(Attribute4i, 4, gl::INT);
+create_attribute_struct!(Attribute3b, 3, gl::BOOL);
+create_attribute_struct!(Attribute3i, 3, gl::INT);
+
 create_attribute_struct!(Attribute4f, 4, gl::FLOAT);
+create_attribute_struct!(Attribute4b, 4, gl::BOOL);
+create_attribute_struct!(Attribute4i, 4, gl::INT);
 
 
-pub fn new_attribute(name: String, kind: GLenum, location: usize) -> Box<Attribute> {
+pub fn new_attribute(name: String, kind: GLenum, size: usize, location: usize) -> Box<Attribute> {
     match kind {
-        gl::INT => Box::new(Attribute1i::new(name, kind, location)) as Box<Attribute>,
-        gl::FLOAT => Box::new(Attribute1f::new(name, kind, location)) as Box<Attribute>,
+        gl::BOOL => Box::new(Attribute1i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::INT => Box::new(Attribute1i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::FLOAT => Box::new(Attribute1f::new(name, kind, size, location)) as Box<Attribute>,
 
-        gl::INT_VEC2 => Box::new(Attribute2i::new(name, kind, location)) as Box<Attribute>,
-        gl::FLOAT_VEC2 => Box::new(Attribute2f::new(name, kind, location)) as Box<Attribute>,
+        gl::BOOL_VEC2 => Box::new(Attribute2i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::INT_VEC2 => Box::new(Attribute2i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::FLOAT_VEC2 => Box::new(Attribute2f::new(name, kind, size, location)) as Box<Attribute>,
 
-        gl::INT_VEC3 => Box::new(Attribute3i::new(name, kind, location)) as Box<Attribute>,
-        gl::FLOAT_VEC3 => Box::new(Attribute3f::new(name, kind, location)) as Box<Attribute>,
+        gl::BOOL_VEC3 => Box::new(Attribute3i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::INT_VEC3 => Box::new(Attribute3i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::FLOAT_VEC3 => Box::new(Attribute3f::new(name, kind, size, location)) as Box<Attribute>,
 
-        gl::INT_VEC4 => Box::new(Attribute4i::new(name, kind, location)) as Box<Attribute>,
-        gl::FLOAT_VEC4 => Box::new(Attribute4f::new(name, kind, location)) as Box<Attribute>,
+        gl::BOOL_VEC4 => Box::new(Attribute4i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::INT_VEC4 => Box::new(Attribute4i::new(name, kind, size, location)) as Box<Attribute>,
+        gl::FLOAT_VEC4 => Box::new(Attribute4f::new(name, kind, size, location)) as Box<Attribute>,
 
-        _ => Box::new(Attribute1i::new(name, kind, location)) as Box<Attribute>,
+        _ => panic!("Invalid attribte type {:?}", kind),
     }
 }
