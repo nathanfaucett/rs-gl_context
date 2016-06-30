@@ -1,0 +1,21 @@
+[package]
+name = "gl_context"
+version = "0.1.0"
+authors = ["nathanfaucett <nathanfaucett@gmail.com>"]
+
+keywords = ["gl_context"]
+description = "opengl context api helpers"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/nathanfaucett/rs-gl_context.git"
+homepage = "https://github.com/nathanfaucett/rs-gl_context"
+
+[dependencies]
+gl = "0.6.0"
+regex = "0.1"
+
+[dependencies.num]
+git = "https://github.com/nathanfaucett/rs-num.git"
+
+[dependencies.mat4]
+git = "https://github.com/nathanfaucett/rs-mat4.git"
