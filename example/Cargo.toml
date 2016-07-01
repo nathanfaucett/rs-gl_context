@@ -11,6 +11,9 @@ time = "0.1"
 [dependencies.gl_context]
 path = ".."
 
+[dependencies.pseudo_random]
+git = "https://github.com/nathanfaucett/rs-pseudo_random.git"
+
 [dependencies.num]
 git = "https://github.com/nathanfaucett/rs-num.git"
 

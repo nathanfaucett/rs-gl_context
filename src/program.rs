@@ -43,13 +43,13 @@ impl Program {
 
     pub fn id(&self) -> usize { self.id }
 
-    pub fn set_uniform(&mut self, name: String, context: &Context, value: &Any, force: bool) -> bool {
+    pub fn set_uniform(&mut self, name: String, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(&name) {
             Some(ref mut uniform) => uniform.set(context, value, force),
             None => panic!("No uniform named {:?} found", name),
         }
     }
-    pub fn set_uniform_unchecked(&mut self, name: String, context: &Context, value: &Any, force: bool) -> bool {
+    pub fn set_uniform_unchecked(&mut self, name: String, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(&name) {
             Some(ref mut uniform) => uniform.set_unchecked(context, value, force),
             None => panic!("No uniform named {:?} found", name),

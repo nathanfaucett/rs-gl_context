@@ -3,7 +3,6 @@ use core::ops::Drop;
 
 use gl;
 use gl::types::*;
-use num::Num;
 
 
 #[derive(Debug)]
@@ -57,7 +56,7 @@ impl Buffer {
     pub fn kind_size(&self) -> usize { self.kind_size }
     pub fn length(&self) -> usize { self.length }
 
-    pub fn set<T: Num>(&mut self, kind: GLenum, array: &[T], stride: usize, draw: GLenum) -> &mut Self {
+    pub fn set<T>(&mut self, kind: GLenum, array: &[T], stride: usize, draw: GLenum) -> &mut Self {
         let length = array.len();
         let kind_size = mem::size_of::<T>();
         let size = kind_size * length;

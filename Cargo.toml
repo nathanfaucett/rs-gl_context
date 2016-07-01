@@ -13,9 +13,3 @@ homepage = "https://github.com/nathanfaucett/rs-gl_context"
 [dependencies]
 gl = "0.6.0"
 regex = "0.1"
-
-[dependencies.num]
-git = "https://github.com/nathanfaucett/rs-num.git"
-
-[dependencies.mat4]
-git = "https://github.com/nathanfaucett/rs-mat4.git"

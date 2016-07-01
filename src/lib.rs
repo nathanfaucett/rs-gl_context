@@ -4,7 +4,6 @@
 
 extern crate collections;
 
-extern crate num;
 extern crate regex;
 extern crate gl;
 
@@ -24,5 +23,5 @@ pub use uniform::*;
 pub use buffer::Buffer;
 pub use context::Context;
 pub use program::Program;
-pub use texture::{Texture, TextureTrait};
+pub use texture::Texture;
 pub use vertex_array::VertexArray;

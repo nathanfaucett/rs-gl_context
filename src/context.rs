@@ -67,14 +67,14 @@ pub struct Context {
     program_force: bool,
 
     texture_index: usize,
-    active_index: isize,
-    active_texture: usize,
+    current_texture_index: isize,
+    current_texture: usize,
 }
 
 impl Context {
 
     pub fn new() -> Self {
-        let mut context = Context {
+        Context {
             version: String::new(),
 
             major: 0,
@@ -124,20 +124,32 @@ impl Context {
             program_force: false,
 
             texture_index: 0,
-            active_index: -1,
-            active_texture: 0,
-        };
-
-        context.get_gl_info();
-        context.gl_reset();
-
-        context
+            current_texture_index: -1,
+            current_texture: 0,
+        }
     }
+
+    pub fn version(&self) -> String { self.version.clone() }
 
     pub fn major(&self) -> usize { self.major }
     pub fn minor(&self) -> usize { self.minor }
     pub fn glsl_major(&self) -> usize { self.glsl_major }
     pub fn glsl_minor(&self) -> usize { self.glsl_minor }
+
+    pub fn max_anisotropy(&self) -> usize { self.max_anisotropy }
+    pub fn max_textures(&self) -> usize { self.max_textures }
+    pub fn max_vertex_textures(&self) -> usize { self.max_vertex_textures }
+    pub fn max_texture_size(&self) -> usize { self.max_texture_size }
+    pub fn max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
+    pub fn max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
+
+    pub fn max_uniforms(&self) -> usize { self.max_uniforms }
+    pub fn max_varyings(&self) -> usize { self.max_varyings }
+    pub fn max_attributes(&self) -> usize { self.max_attributes }
+
+    pub fn init(&mut self) -> &mut Self {
+        self.reset()
+    }
 
     pub fn reset(&mut self) -> &mut Self {
 
@@ -186,14 +198,19 @@ impl Context {
         self.program_force = false;
 
         self.texture_index = 0;
-        self.active_index = -1;
-        self.active_texture = 0;
+        self.current_texture_index = -1;
+        self.current_texture = 0;
 
         self.get_gl_info();
         self.gl_reset()
     }
 
     fn gl_reset(&mut self) -> &mut Self {
+
+        if self.major < 4 {
+            unsafe { gl::Enable(gl::TEXTURE_2D); }
+        }
+        unsafe { gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1); }
 
         self.disable_attributes();
 
@@ -553,6 +570,41 @@ impl Context {
         }
     }
 
+    pub fn set_texture(&mut self, location: usize, texture: &Texture, force: bool) -> bool {
+        let id = texture.id();
+        let index = self.texture_index;
+        let current_texture_index = self.current_texture_index;
+
+        self.texture_index = index + 1;
+        self.current_texture_index = index as isize;
+
+        if self.current_texture != id || force {
+            let needs_update = force || self.program_force || current_texture_index != index as isize;
+
+            if needs_update {
+                unsafe { gl::ActiveTexture(gl::TEXTURE0 + index as GLuint); }
+                unsafe { gl::Uniform1i(location as GLint, index as GLint); }
+            }
+            unsafe { gl::BindTexture(gl::TEXTURE_2D, id as GLuint); }
+
+            self.current_texture = id;
+
+            true
+        } else {
+            false
+        }
+    }
+    pub fn remove_texture(&mut self, force: bool) -> bool {
+        if self.current_texture != 0 || force {
+            self.texture_index = 0;
+            self.current_texture_index = -1;
+            unsafe { gl::BindTexture(gl::TEXTURE_2D, 0); }
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn set_program(&mut self, program: &Program, force: bool) -> bool {
         let id = program.id();
 
@@ -561,7 +613,7 @@ impl Context {
             self.program_force = true;
             unsafe { gl::UseProgram(id as GLuint); }
         } else {
-            if self.texture_index != 0 || self.active_index != -1 {
+            if self.texture_index != 0 || self.current_texture_index != -1 {
                 self.program_force = true;
             } else {
                 self.program_force = false;
@@ -569,12 +621,26 @@ impl Context {
         }
 
         self.texture_index = 0;
-        self.active_index = -1;
+        self.current_texture_index = -1;
 
         true
     }
+    pub fn remove_program(&mut self, force: bool) -> bool {
+        if self.program != 0 || force {
+            self.program = 0;
+            self.program_force = true;
+            unsafe { gl::UseProgram(0); }
+        } else {
+            if self.texture_index != 0 || self.current_texture_index != -1 {
+                self.program_force = true;
+            } else {
+                self.program_force = false;
+            }
+        }
 
-    pub fn set_texture(&mut self, texture: Texture, force: bool) -> bool {
+        self.texture_index = 0;
+        self.current_texture_index = -1;
+
         true
     }
 
@@ -590,9 +656,13 @@ impl Context {
         VertexArray::new()
     }
 
+    pub fn new_texture(&self) -> Texture {
+        Texture::new()
+    }
+
     pub fn has_extenstion(&self, string: String) -> bool {
         match self.extenstions.iter().position(|e| *e == string) {
-            Some(index) => true,
+            Some(_) => true,
             None => false,
         }
     }

@@ -1,3 +1,4 @@
+extern crate pseudo_random;
 extern crate time;
 extern crate mat4;
 extern crate gl_context;
@@ -8,7 +9,8 @@ extern crate gl;
 use std::f32::consts::PI;
 
 use glutin::Window;
-use gl_context::Context;
+use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
+use pseudo_random::Random;
 
 
 static TO_RADS: f32 = PI / 180f32;
@@ -17,20 +19,32 @@ static TO_RADS: f32 = PI / 180f32;
 fn main() {
     let window = Window::new().unwrap();
 
+    let random = Random::new();
+    random.set_seed(time::now().to_timespec().sec as usize);
+
     unsafe {
-        window.make_current();
-        gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+        match window.make_current() {
+            Ok(_) => {
+                gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+            },
+            Err(e) => panic!("{:?}", e),
+        }
     }
 
     let mut context = Context::new();
+
+    context.init();
+
+    println!(
+        "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
+        context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
+    );
 
     let vertex = String::from("
         #version 150
 
         uniform mat4 projection;
         uniform mat4 model_view;
-
-        uniform vec2 stuff[2];
 
         uniform vec2 offset;
 
@@ -40,8 +54,8 @@ fn main() {
         varying vec2 v_uv;
 
         void main() {
-            gl_Position = projection * model_view * vec4(position, stuff[1][1]);
             v_uv = offset + uv;
+            gl_Position = projection * model_view * vec4(position, 1.0);
         }
     ");
 
@@ -50,20 +64,37 @@ fn main() {
 
         out vec4 frag_color;
 
+        uniform sampler2D diffuse;
+
         varying vec2 v_uv;
 
         void main() {
-            frag_color = vec4(v_uv, 1.0, 1.0);
+            frag_color = texture2D(diffuse, v_uv);
         }
     ");
 
-    println!(
-        "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
-        context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
-    );
-
     let mut program = context.new_program();
     program.set(vertex, fragment);
+
+    let mut data = [0xffffffffu32; 1024 * 1024];
+    for i in 0..(1024 * 1024) {
+        let r = (random.next_f32() * 256f32) as u32;
+        let c = (0xff000000) | (r << 16) | (r << 8) | r;
+        data[i] = c;
+    }
+
+    let mut texture = context.new_texture();
+    texture.set(
+        &context,
+        1024,
+        1024,
+        TextureFormat::RGBA,
+        TextureKind::UnsignedByte,
+        TextureWrap::Clamp,
+        FilterMode::None,
+        true,
+        &data
+    );
 
     let vertex_array = context.new_vertex_array();
     context.set_vertex_array(&vertex_array);
@@ -106,9 +137,9 @@ fn main() {
 
         ms = (time::now() - start_time).num_nanoseconds().unwrap() as f32 * 0.000001f32;
 
-        color[0] = (ms * 0.000001f32).sin();
-        color[1] = (ms * 0.0001f32).cos();
-        color[2] = (ms * 0.001f32).sin();
+        color[0] = (ms * 0.000001f32).cos();
+        color[1] = (ms * 0.0001f32).sin();
+        color[2] = (ms * 0.001f32).cos();
 
         context.set_clear_color(color);
         context.clear(true, true, true);
@@ -116,8 +147,8 @@ fn main() {
         camera[0] = ((ms * 0.001f32) * 2f32).sin();
         camera[1] = 0f32;
 
-        offset[0] = ((ms * 0.01f32) * 0.5f32).sin();
-        offset[1] = ((ms * 0.01f32) * 0.5f32).cos();
+        offset[0] = (ms * 0.001f32).sin() * 0.5f32;
+        offset[1] = (ms * 0.001f32).cos() * 0.5f32;
 
         context.set_program(&program, false);
 
@@ -128,13 +159,16 @@ fn main() {
         program.set_attribute(String::from("position"), &mut context, &buffer, 0, false);
         program.set_attribute(String::from("uv"), &mut context, &buffer, 3, false);
 
+        program.set_uniform(String::from("diffuse"), &mut context, &texture, false);
         program.set_uniform_unchecked(String::from("offset"), &mut context, &offset, false);
-        program.set_uniform(String::from("stuff"), &mut context, &[[1f32, 1f32], [1f32, 1f32]], false);
         program.set_uniform(String::from("projection"), &mut context, &perspective_matrix, false);
         program.set_uniform_unchecked(String::from("model_view"), &mut context, &model_view, false);
 
         unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4); }
 
-        window.swap_buffers();
+        match window.swap_buffers() {
+            Ok(_) => (),
+            Err(e) => panic!("{:?}", e),
+        }
     }
 }

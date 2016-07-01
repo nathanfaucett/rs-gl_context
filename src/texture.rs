@@ -1,95 +1,124 @@
-use core::fmt::Debug;
+use core::ops::Drop;
 
 use gl;
+use gl::types::*;
 
 use context::Context;
 use enums::{TextureFormat, TextureWrap, TextureKind, FilterMode};
 
 
-pub trait TextureTrait: Debug {
-
-    fn needs_update(&self) -> bool;
-    fn set_needs_update(&mut self, needs_update: bool);
-
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
-
-    fn format(&self) -> TextureFormat;
-    fn kind(&self) -> TextureKind;
-    fn wrap(&self) -> TextureWrap;
-    fn filter(&self) -> FilterMode;
-
-    fn generate_mipmap(&self) -> bool;
-    fn flip_y(&self) -> bool;
-    fn premultiply_alpha(&self) -> bool;
-
-    fn anisotropy(&self) -> usize;
-}
-
-
 #[derive(Debug)]
 pub struct Texture {
-    needs_update: bool,
-    texture: u32,
+    id: usize,
+}
+
+impl Drop for Texture {
+    fn drop(&mut self) {
+        if self.id != 0 {
+            unsafe { gl::DeleteTextures(1, &(self.id as GLuint) as *const _); }
+        }
+    }
 }
 
 impl Texture {
 
     pub fn new() -> Self {
         Texture {
-            needs_update: true,
-            texture: 0u32,
+            id: {
+                let mut id = 0;
+                unsafe { gl::GenTextures(1, &mut id); }
+                id as usize
+            },
         }
     }
 
-    pub fn texture(&mut self, context: &mut Context, texture: &mut TextureTrait) -> u32 {
-        self.compile(context, texture);
-        self.texture
-    }
+    pub fn id(&self) -> usize { self.id }
 
-    pub fn needs_update(&self, texture: &mut TextureTrait) -> bool {
-        self.needs_update || self.texture == 0 || texture.needs_update()
-    }
+    pub fn set<T>(
+        &mut self,
+        context: &Context,
+        width: usize,
+        height: usize,
+        format: TextureFormat,
+        kind: TextureKind,
+        wrap: TextureWrap,
+        filter: FilterMode,
+        generate_mipmap: bool,
+        data: &[T],
+    ) -> &mut Self {
+        let pot = is_pot(width as usize) && is_pot(height as usize);
 
-    fn compile(&mut self, context: &mut Context, texture: &mut TextureTrait) {
-        if self.needs_update(texture) {
-            self.needs_update = false;
-            texture.set_needs_update(false);
+        let major = context.major();
+        let minor = context.minor();
+
+        let mag_filter;
+        let min_filter;
+
+        if filter == FilterMode::None {
+            mag_filter = gl::NEAREST;
+            min_filter = if pot && generate_mipmap {gl::LINEAR_MIPMAP_NEAREST} else {gl::NEAREST};
+        } else {
+            mag_filter = gl::LINEAR;
+            min_filter = if pot && generate_mipmap {gl::LINEAR_MIPMAP_LINEAR} else {gl::LINEAR};
         }
-    }
 
-    fn is_pot(&mut self, texture: &TextureTrait) -> bool {
-        is_pot(texture.width()) && is_pot(texture.height())
-    }
+        let format = get_format(format) ;
+        let wrap = get_wrap(wrap) as GLint;
+        let kind = get_kind(kind);
 
-    fn format(&mut self, texture: &TextureTrait) -> u32 {
-        match texture.format() {
-            TextureFormat::RGBA => gl::RGBA,
-            TextureFormat::RGB => gl::RGB,
-            TextureFormat::Alpha => gl::ALPHA,
-            TextureFormat::Luminance => gl::RGBA, //gl::LUMINANCE,
-            TextureFormat::LuminanceAlpha => gl::RGBA, //gl::LUMINANCE_ALPHA,
+        unsafe {
+            gl::BindTexture(gl::TEXTURE_2D, self.id as GLuint);
+
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, mag_filter as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, min_filter as GLint);
+
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap);
+
+            gl::TexImage2D(gl::TEXTURE_2D, 0, format as GLint, width as i32, height as i32, 0, format, kind, data.as_ptr() as *const _);
+
+            if generate_mipmap && pot {
+                if major >= 4 && minor >= 5 {
+                    gl::GenerateTextureMipmap(self.id as GLuint);
+                } else {
+                    gl::GenerateMipmap(gl::TEXTURE_2D);
+                }
+            }
+
+            gl::BindTexture(gl::TEXTURE_2D, 0);
         }
-    }
 
-    fn kind(&mut self, texture: &TextureTrait) -> u32 {
-        match texture.kind() {
-            TextureKind::UnsignedByte => gl::UNSIGNED_BYTE,
-            TextureKind::Float => gl::FLOAT,
-            TextureKind::DepthComponent => gl::DEPTH_COMPONENT,
-            TextureKind::UnsignedShort => gl::UNSIGNED_SHORT,
-            TextureKind::UnsignedShort565 => gl::UNSIGNED_SHORT_5_6_5,
-            TextureKind::UnsignedShort4444 => gl::UNSIGNED_SHORT_4_4_4_4,
-            TextureKind::UnsignedShort5551 => gl::UNSIGNED_SHORT_5_5_5_1,
-        }
+        self
     }
+}
 
-    fn wrap(&mut self, texture: &TextureTrait) -> u32 {
-        match texture.wrap() {
-            TextureWrap::Repeat => gl::REPEAT,
-            TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
-            TextureWrap::MirroredRepeat => gl::MIRRORED_REPEAT,
-        }
+fn get_format(format: TextureFormat) -> GLenum {
+    match format {
+        TextureFormat::RGB => gl::RGB,
+        TextureFormat::RGBA => gl::RGBA,
+        TextureFormat::Alpha => gl::ALPHA,
+        TextureFormat::Luminance => gl::RGBA, //gl::LUMINANCE,
+        TextureFormat::LuminanceAlpha => gl::RGBA, //gl::LUMINANCE_ALPHA,
+    }
+}
+
+fn get_kind(kind: TextureKind) -> GLenum {
+    match kind {
+        TextureKind::UnsignedByte => gl::UNSIGNED_BYTE,
+        TextureKind::Float => gl::FLOAT,
+        TextureKind::DepthComponent => gl::DEPTH_COMPONENT,
+        TextureKind::UnsignedShort => gl::UNSIGNED_SHORT,
+        TextureKind::UnsignedShort565 => gl::UNSIGNED_SHORT_5_6_5,
+        TextureKind::UnsignedShort4444 => gl::UNSIGNED_SHORT_4_4_4_4,
+        TextureKind::UnsignedShort5551 => gl::UNSIGNED_SHORT_5_5_5_1,
+    }
+}
+
+fn get_wrap(wrap: TextureWrap) -> GLenum {
+    match wrap {
+        TextureWrap::Repeat => gl::REPEAT,
+        TextureWrap::Clamp => gl::CLAMP_TO_EDGE,
+        TextureWrap::MirroredRepeat => gl::MIRRORED_REPEAT,
     }
 }
 
