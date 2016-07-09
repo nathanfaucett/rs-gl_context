@@ -152,7 +152,7 @@ fn main() {
 
         context.set_program(&program, false);
 
-        mat4::set_position(&mut model_view, camera);
+        mat4::set_position(&mut model_view, &camera);
 
         context.set_vertex_array(&vertex_array);
 
