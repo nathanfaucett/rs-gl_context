@@ -109,7 +109,7 @@ impl Context {
 
             blending: Blending::Default,
             cull_face: CullFace::Back,
-            depth_func: Depth::LessThan,
+            depth_func: Depth::Always,
 
             blending_disabled: true,
             cull_face_disabled: true,
@@ -189,7 +189,7 @@ impl Context {
 
         self.blending = Blending::Default;
         self.cull_face = CullFace::Back;
-        self.depth_func = Depth::LessThan;
+        self.depth_func = Depth::Always;
 
         self.blending_disabled = true;
         self.cull_face_disabled = true;
@@ -289,7 +289,7 @@ impl Context {
     #[inline(always)]
     fn enable_blending(&mut self) {
         if self.blending_disabled {
-            //unsafe { gl::Enable(gl::BLEND); }
+            unsafe { gl::Enable(gl::BLEND); }
             self.blending_disabled = false;
         }
     }
@@ -342,7 +342,7 @@ impl Context {
     #[inline(always)]
     fn enable_cull_face(&mut self) {
         if self.cull_face_disabled {
-            //unsafe { gl::Enable(gl::CULL_FACE); }
+            unsafe { gl::Enable(gl::CULL_FACE); }
             self.cull_face_disabled = false;
         }
     }
@@ -379,7 +379,7 @@ impl Context {
     #[inline(always)]
     fn enable_depth_test(&mut self) {
         if self.depth_test_disabled {
-            //unsafe { gl::Enable(gl::DEPTH_TEST); }
+            unsafe { gl::Enable(gl::DEPTH_TEST); }
             self.depth_test_disabled = false;
         }
     }

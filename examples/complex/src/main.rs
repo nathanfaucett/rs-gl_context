@@ -61,7 +61,7 @@ fn main() {
     let window = Window::new().unwrap();
 
     let mut random = Prng::new();
-    random.set_seed(time::now().to_timespec().sec as usize);
+    random.set_seed(1234567890);
 
     unsafe {
         match window.make_current() {
