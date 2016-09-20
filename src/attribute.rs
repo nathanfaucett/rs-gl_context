@@ -9,10 +9,10 @@ use buffer::Buffer;
 
 
 pub trait Attribute: Debug {
-    fn name(&self) -> String;
-    fn kind(&self) -> GLenum;
-    fn size(&self) -> usize;
-    fn location(&self) -> GLint;
+    fn get_name(&self) -> String;
+    fn get_kind(&self) -> GLenum;
+    fn get_size(&self) -> usize;
+    fn get_location(&self) -> GLint;
     fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool;
 }
 
@@ -21,35 +21,35 @@ macro_rules! create_attribute_struct {
     ($t: ident, $size: expr, $kind: expr) => (
         #[derive(Debug)]
         pub struct $t {
-            _name: String,
-            _kind: GLenum,
-            _size: usize,
-            _location: GLint,
+            name: String,
+            kind: GLenum,
+            size: usize,
+            location: GLint,
         }
         impl $t {
             pub fn new(name: String, kind: GLenum, size: usize, location: GLint) -> Self {
                 $t {
-                    _name: name,
-                    _kind: kind,
-                    _size: size,
-                    _location: location,
+                    name: name,
+                    kind: kind,
+                    size: size,
+                    location: location,
                 }
             }
         }
         impl Attribute for $t {
-            fn name(&self) -> String { self._name.clone() }
-            fn kind(&self) -> GLenum { self._kind }
-            fn size(&self) -> usize { self._size }
-            fn location(&self) -> GLint { self._location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
-                let kind_size = buffer.kind_size();
+                let kind_size = buffer.get_kind_size();
 
                 context.set_buffer(buffer, force);
                 context.set_attrib_pointer(
-                    self.location() as GLuint,
+                    self.get_location() as GLuint,
                     $size,
                     $kind,
-                    (buffer.stride() * kind_size) as GLint,
+                    (buffer.get_stride() * kind_size) as GLint,
                     (offset * kind_size) as GLint,
                     force
                 )

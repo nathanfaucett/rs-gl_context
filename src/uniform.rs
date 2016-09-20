@@ -10,10 +10,10 @@ use texture::Texture;
 
 
 pub trait Uniform: Debug {
-    fn name(&self) -> String;
-    fn kind(&self) -> GLenum;
-    fn size(&self) -> usize;
-    fn location(&self) -> GLint;
+    fn get_name(&self) -> String;
+    fn get_kind(&self) -> GLenum;
+    fn get_size(&self) -> usize;
+    fn get_location(&self) -> GLint;
     fn set_unchecked(&mut self, context: &mut Context, value: &Any, force: bool) -> bool;
     fn set(&mut self, context: &mut Context, value: &Any, force: bool) -> bool;
 }
@@ -90,10 +90,10 @@ macro_rules! create_uniform_struct {
 macro_rules! create_simple_uniform {
     ($t: ident, $func: ident, $kind: ident, $item_count: expr) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
@@ -130,10 +130,10 @@ macro_rules! create_simple_uniform {
 macro_rules! create_simple_single_uniform {
     ($t: ident, $func: ident, $kind: ident) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
                 match value.downcast_ref::<$kind>() {
                     Some(value) => {
@@ -170,10 +170,10 @@ macro_rules! create_simple_single_uniform {
 macro_rules! create_matrix_uniform {
     ($t: ident, $func: ident, $kind: ident, $item_count: expr) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
@@ -242,10 +242,10 @@ create_matrix_uniform!(UniformMatrix4f, UniformMatrix4fv, f32, 16);
 macro_rules! create_size_simple_uniform {
     ($t: ident, $func: ident, $kind: ident, $item_count: expr) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
                 unsafe { gl::$func(self.location, $item_count, (((value as *const Any) as *const $kind) as usize) as *const _); }
                 true
@@ -260,10 +260,10 @@ macro_rules! create_size_simple_uniform {
 macro_rules! create_size_matrix_uniform {
     ($t: ident, $func: ident, $kind: ident, $item_count: expr) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
                 unsafe { gl::$func(self.location, self.size as GLint, gl::FALSE, (((value as *const Any) as *const $kind) as usize) as *const _); }
                 true
@@ -310,10 +310,10 @@ create_size_matrix_uniform!(UniformMatrix4fv, UniformMatrix4fv, f32, 16);
 macro_rules! create_texture_uniform {
     ($t: ident) => (
         impl Uniform for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> GLint { self.location }
+            fn get_name(&self) -> String { self.name.clone() }
+            fn get_kind(&self) -> GLenum { self.kind }
+            fn get_size(&self) -> usize { self.size }
+            fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, context: &mut Context, value: &Any, force: bool) -> bool {
                 match value.downcast_ref::<Texture>() {
                     Some(texture) => {

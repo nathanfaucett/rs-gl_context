@@ -33,7 +33,7 @@ impl Texture {
         }
     }
 
-    pub fn id(&self) -> GLuint { self.id }
+    pub fn get_id(&self) -> GLuint { self.id }
 
     pub fn set<T>(
         &mut self,
@@ -49,8 +49,8 @@ impl Texture {
     ) -> &mut Self {
         let pot = is_pot(width as usize) && is_pot(height as usize);
 
-        let major = context.major();
-        let minor = context.minor();
+        let major = context.get_major();
+        let minor = context.get_minor();
 
         let mag_filter;
         let min_filter;

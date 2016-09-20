@@ -9,14 +9,12 @@ use std::str;
 use gl_context::{Context, link_program, compile_shader};
 
 
-// Vertex data
 static VERTEX_DATA: [GLfloat; 6] = [
      0.0,  0.5,
      0.5, -0.5,
     -0.5, -0.5
 ];
 
-// Shader sources
 static VS_SRC: &'static str =
    "#version 150\n\
     in vec2 position;\n\
@@ -44,11 +42,11 @@ fn main() {
         }
     }
 
-    //context.init();
+    context.init();
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
-        context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
+        context.get_major(), context.get_minor(), context.get_glsl_major(), context.get_glsl_minor()
     );
 
     let vs = compile_shader(VS_SRC, gl::VERTEX_SHADER);
@@ -106,7 +104,6 @@ fn main() {
         }
     }
 
-    // Cleanup
     unsafe {
         gl::DeleteProgram(program);
         gl::DeleteShader(fs);

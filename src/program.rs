@@ -19,15 +19,15 @@ use context::Context;
 
 #[derive(Debug)]
 pub struct Program {
-    _id: GLuint,
+    id: GLuint,
     uniforms: BTreeMap<String, Box<Uniform>>,
     attributes: BTreeMap<String, Box<Attribute>>,
 }
 
 impl Drop for Program {
     fn drop(&mut self) {
-        if self._id != 0 {
-            unsafe { gl::DeleteProgram(self._id); }
+        if self.id != 0 {
+            unsafe { gl::DeleteProgram(self.id); }
         }
     }
 }
@@ -36,13 +36,13 @@ impl Program {
 
     pub fn new() -> Self {
         Program {
-            _id: 0,
+            id: 0,
             uniforms: BTreeMap::new(),
             attributes: BTreeMap::new(),
         }
     }
 
-    pub fn id(&self) -> GLuint { self._id }
+    pub fn get_id(&self) -> GLuint { self.id }
 
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
@@ -67,21 +67,21 @@ impl Program {
         let vs = compile_shader(vertex, gl::VERTEX_SHADER);
         let fs = compile_shader(fragment, gl::FRAGMENT_SHADER);
         let id = link_program(vs, fs);
-        self.set_id(id)
+        self.setid(id)
     }
 
-    pub fn set_id(&mut self, id: GLuint) -> &mut Self {
+    pub fn setid(&mut self, id: GLuint) -> &mut Self {
         {
             let ref mut uniforms = self.uniforms;
             let ref mut attributes = self.attributes;
 
-            if self._id != 0 {
+            if self.id != 0 {
                 uniforms.clear();
                 attributes.clear();
-                unsafe { gl::DeleteProgram(self._id); }
+                unsafe { gl::DeleteProgram(self.id); }
             }
 
-            self._id = id;
+            self.id = id;
             parse_uniforms(id, uniforms);
             parse_attributes(id, attributes);
         }

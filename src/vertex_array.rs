@@ -28,5 +28,5 @@ impl VertexArray {
             },
         }
     }
-    pub fn id(&self) -> GLuint { self.id }
+    pub fn get_id(&self) -> GLuint { self.id }
 }

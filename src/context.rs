@@ -19,27 +19,27 @@ static LOWP: &'static str = "lowp";
 
 #[derive(Debug)]
 pub struct Context {
-    _version: String,
+    version: String,
 
-    _major: usize,
-    _minor: usize,
-    _glsl_major: usize,
-    _glsl_minor: usize,
+    major: usize,
+    minor: usize,
+    glsl_major: usize,
+    glsl_minor: usize,
 
     extenstions: Vec<String>,
 
     clear_color: [f32; 4],
 
-    _max_anisotropy: usize,
-    _max_textures: usize,
-    _max_vertex_textures: usize,
-    _max_texture_size: usize,
-    _max_cube_texture_size: usize,
-    _max_render_buffer_size: usize,
+    max_anisotropy: usize,
+    max_textures: usize,
+    max_vertex_textures: usize,
+    max_texture_size: usize,
+    max_cube_texture_size: usize,
+    max_render_buffer_size: usize,
 
-    _max_uniforms: usize,
-    _max_varyings: usize,
-    _max_attributes: usize,
+    max_uniforms: usize,
+    max_varyings: usize,
+    max_attributes: usize,
 
     enabled_attributes: Vec<bool>,
 
@@ -64,7 +64,7 @@ pub struct Context {
     current_vertex_array: GLuint,
 
     program: GLuint,
-    _precision: &'static str,
+    precision: &'static str,
     program_force: bool,
 
     texture_index: GLuint,
@@ -76,27 +76,27 @@ impl Context {
 
     pub fn new() -> Self {
         Context {
-            _version: String::new(),
+            version: String::new(),
 
-            _major: 0,
-            _minor: 0,
-            _glsl_major: 0,
-            _glsl_minor: 0,
+            major: 0,
+            minor: 0,
+            glsl_major: 0,
+            glsl_minor: 0,
 
             extenstions: Vec::new(),
 
             clear_color: [0f32, 0f32, 0f32, 1f32],
 
-            _max_anisotropy: 0,
-            _max_textures: 0,
-            _max_vertex_textures: 0,
-            _max_texture_size: 0,
-            _max_cube_texture_size: 0,
-            _max_render_buffer_size: 0,
+            max_anisotropy: 0,
+            max_textures: 0,
+            max_vertex_textures: 0,
+            max_texture_size: 0,
+            max_cube_texture_size: 0,
+            max_render_buffer_size: 0,
 
-            _max_uniforms: 0,
-            _max_varyings: 0,
-            _max_attributes: 0,
+            max_uniforms: 0,
+            max_varyings: 0,
+            max_attributes: 0,
 
             enabled_attributes: Vec::new(),
 
@@ -121,7 +121,7 @@ impl Context {
             current_vertex_array: 0,
 
             program: 0,
-            _precision: HIGHP,
+            precision: HIGHP,
             program_force: false,
 
             texture_index: 0,
@@ -130,23 +130,25 @@ impl Context {
         }
     }
 
-    pub fn version(&self) -> String { self._version.clone() }
+    pub fn get_version(&self) -> String { self.version.clone() }
 
-    pub fn major(&self) -> usize { self._major }
-    pub fn minor(&self) -> usize { self._minor }
-    pub fn glsl_major(&self) -> usize { self._glsl_major }
-    pub fn glsl_minor(&self) -> usize { self._glsl_minor }
+    pub fn get_major(&self) -> usize { self.major }
+    pub fn get_minor(&self) -> usize { self.minor }
+    pub fn get_glsl_major(&self) -> usize { self.glsl_major }
+    pub fn get_glsl_minor(&self) -> usize { self.glsl_minor }
 
-    pub fn max_anisotropy(&self) -> usize { self._max_anisotropy }
-    pub fn max_textures(&self) -> usize { self._max_textures }
-    pub fn max_vertex_textures(&self) -> usize { self._max_vertex_textures }
-    pub fn max_texture_size(&self) -> usize { self._max_texture_size }
-    pub fn max_cube_texture_size(&self) -> usize { self._max_cube_texture_size }
-    pub fn max_render_buffer_size(&self) -> usize { self._max_render_buffer_size }
+    pub fn get_max_anisotropy(&self) -> usize { self.max_anisotropy }
+    pub fn get_max_textures(&self) -> usize { self.max_textures }
+    pub fn get_max_vertex_textures(&self) -> usize { self.max_vertex_textures }
+    pub fn get_max_texture_size(&self) -> usize { self.max_texture_size }
+    pub fn get_get_max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
+    pub fn get_max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
 
-    pub fn max_uniforms(&self) -> usize { self._max_uniforms }
-    pub fn max_varyings(&self) -> usize { self._max_varyings }
-    pub fn max_attributes(&self) -> usize { self._max_attributes }
+    pub fn get_max_uniforms(&self) -> usize { self.max_uniforms }
+    pub fn get_max_varyings(&self) -> usize { self.max_varyings }
+    pub fn get_max_attributes(&self) -> usize { self.max_attributes }
+
+    pub fn get_precision(&self) -> &'static str { self.precision }
 
     pub fn init(&mut self) -> &mut Self {
         self.reset()
@@ -154,7 +156,7 @@ impl Context {
 
     pub fn reset(&mut self) -> &mut Self {
 
-        self._version.clear();
+        self.version.clear();
 
         self.extenstions.clear();
 
@@ -163,16 +165,16 @@ impl Context {
         self.clear_color[2] = 0f32;
         self.clear_color[3] = 1f32;
 
-        self._max_anisotropy = 0;
-        self._max_textures = 0;
-        self._max_vertex_textures = 0;
-        self._max_texture_size = 0;
-        self._max_cube_texture_size = 0;
-        self._max_render_buffer_size = 0;
+        self.max_anisotropy = 0;
+        self.max_textures = 0;
+        self.max_vertex_textures = 0;
+        self.max_texture_size = 0;
+        self.max_cube_texture_size = 0;
+        self.max_render_buffer_size = 0;
 
-        self._max_uniforms = 0;
-        self._max_varyings = 0;
-        self._max_attributes = 0;
+        self.max_uniforms = 0;
+        self.max_varyings = 0;
+        self.max_attributes = 0;
 
         self.enabled_attributes.clear();
 
@@ -195,7 +197,7 @@ impl Context {
         self.current_element_array_buffer = 0;
 
         self.program = 0;
-        self._precision = HIGHP;
+        self.precision = HIGHP;
         self.program_force = false;
 
         self.texture_index = 0;
@@ -209,7 +211,7 @@ impl Context {
     }
 
     fn gl_reset(&mut self) -> &mut Self {
-        if self._major < 4 {
+        if self.major < 4 {
             unsafe { gl::Enable(gl::TEXTURE_2D); }
         }
         unsafe {
@@ -510,7 +512,7 @@ impl Context {
     }
 
     pub fn set_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        match buffer.kind() {
+        match buffer.get_kind() {
             gl::ARRAY_BUFFER => self.set_array_buffer(buffer, force),
             gl::ELEMENT_ARRAY_BUFFER => self.set_element_array_buffer(buffer, force),
             _ => false,
@@ -533,7 +535,7 @@ impl Context {
 
     #[inline(always)]
     fn set_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.id();
+        let id = buffer.get_id();
 
         if force || self.current_array_buffer != id {
             self.disable_attributes();
@@ -546,7 +548,7 @@ impl Context {
     }
     #[inline(always)]
     fn set_element_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.id();
+        let id = buffer.get_id();
 
         if force || self.current_element_array_buffer != id {
             self.disable_attributes();
@@ -579,7 +581,7 @@ impl Context {
     }
 
     pub fn set_vertex_array(&mut self, vertex_array: &VertexArray, force: bool) -> bool {
-        let id = vertex_array.id();
+        let id = vertex_array.get_id();
 
         if force || self.current_vertex_array != id {
             unsafe { gl::BindVertexArray(id); }
@@ -600,7 +602,7 @@ impl Context {
     }
 
     pub fn set_texture(&mut self, location: GLint, texture: &Texture, force: bool) -> bool {
-        let id = texture.id();
+        let id = texture.get_id();
         let index = self.texture_index;
         let current_texture_index = self.current_texture_index;
 
@@ -635,7 +637,7 @@ impl Context {
     }
 
     pub fn set_program(&mut self, program: &Program, force: bool) -> bool {
-        let id = program.id();
+        let id = program.get_id();
 
         if force || self.program != id {
             self.program = id;
@@ -748,7 +750,7 @@ impl Context {
         let highp_available = vs_high_float_precision > 0 && fs_high_float_precision > 0;
         let mediump_available = vs_mediump_float_precision > 0 && fs_mediump_float_precision > 0;
 
-        self._precision = if !highp_available {
+        self.precision = if !highp_available {
             if mediump_available {
                 MEDIUMP
             } else {
@@ -760,49 +762,49 @@ impl Context {
 
         unsafe {
             let ptr = gl::GetString(gl::VERSION);
-            string_from_ptr(ptr, &mut self._version);
+            string_from_ptr(ptr, &mut self.version);
 
-            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self._version.as_str()).unwrap();
+            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version.as_str()).unwrap();
             let mut major = cap.at(1).unwrap_or("3").parse::<i32>().unwrap();
             let mut minor = cap.at(2).unwrap_or("1").parse::<i32>().unwrap();
 
             if major > 2 {
                 gl::GetIntegerv(gl::MAJOR_VERSION, &mut major);
-                self._major = major as usize;
+                self.major = major as usize;
                 gl::GetIntegerv(gl::MINOR_VERSION, &mut minor);
-                self._minor = minor as usize;
+                self.minor = minor as usize;
             }
 
-            get_glsl_version(self._major, self._minor, &mut self._glsl_major, &mut self._glsl_minor);
-            parse_extenstions(&mut self.extenstions, self._major);
+            get_glsl_version(self.major, self.minor, &mut self.glsl_major, &mut self.glsl_minor);
+            parse_extenstions(&mut self.extenstions, self.major);
         }
 
         unsafe {
             let mut max_textures = 0;
             gl::GetIntegerv(gl::MAX_TEXTURE_IMAGE_UNITS, &mut max_textures);
-            self._max_textures = max_textures as usize;
+            self.max_textures = max_textures as usize;
 
             let mut max_vertex_textures = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_TEXTURE_IMAGE_UNITS, &mut max_vertex_textures);
-            self._max_vertex_textures = max_vertex_textures as usize;
+            self.max_vertex_textures = max_vertex_textures as usize;
 
             let mut max_texture_size = 0;
             gl::GetIntegerv(gl::MAX_TEXTURE_SIZE, &mut max_texture_size);
-            self._max_texture_size = max_texture_size as usize;
+            self.max_texture_size = max_texture_size as usize;
 
             let mut max_cube_texture_size = 0;
             gl::GetIntegerv(gl::MAX_CUBE_MAP_TEXTURE_SIZE, &mut max_cube_texture_size);
-            self._max_cube_texture_size = max_cube_texture_size as usize;
+            self.max_cube_texture_size = max_cube_texture_size as usize;
 
             let mut max_render_buffer_size = 0;
             gl::GetIntegerv(gl::MAX_RENDERBUFFER_SIZE, &mut max_render_buffer_size);
-            self._max_render_buffer_size = max_render_buffer_size as usize;
+            self.max_render_buffer_size = max_render_buffer_size as usize;
 
             let mut vs_max_uniforms = 0;
             let mut fs_max_uniforms = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_UNIFORM_VECTORS, &mut vs_max_uniforms);
             gl::GetIntegerv(gl::MAX_FRAGMENT_UNIFORM_VECTORS, &mut fs_max_uniforms);
-            self._max_uniforms = if vs_max_uniforms < fs_max_uniforms {
+            self.max_uniforms = if vs_max_uniforms < fs_max_uniforms {
                 vs_max_uniforms
             } else {
                 fs_max_uniforms
@@ -810,14 +812,14 @@ impl Context {
 
             let mut max_varyings = 0;
             gl::GetIntegerv(gl::MAX_VARYING_VECTORS, &mut max_varyings);
-            self._max_varyings = max_varyings as usize * 4;
+            self.max_varyings = max_varyings as usize * 4;
 
             let mut max_attributes = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_ATTRIBS, &mut max_attributes);
-            self._max_attributes = max_attributes as usize;
+            self.max_attributes = max_attributes as usize;
         }
 
-        for _ in 0..self._max_attributes {
+        for _ in 0..self.max_attributes {
             self.enabled_attributes.push(false);
         }
     }
