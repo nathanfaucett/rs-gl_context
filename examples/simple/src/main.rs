@@ -64,18 +64,16 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(gl::ARRAY_BUFFER,
                        (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       mem::transmute(&VERTEX_DATA[0]),
+                       mem::transmute(VERTEX_DATA.as_ptr()),
                        gl::STATIC_DRAW);
 
         gl::UseProgram(program);
-        gl::BindFragDataLocation(program, 0, mem::transmute("out_color".as_ptr()));
+        gl::BindFragDataLocation(program, 0, mem::transmute("out_color\0".as_ptr()));
 
-        let pos_attr = gl::GetAttribLocation(program, mem::transmute("position".as_ptr()));
+        let pos_attr = gl::GetAttribLocation(program, mem::transmute("position\0".as_ptr()));
         gl::EnableVertexAttribArray(pos_attr as GLuint);
-        gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT,
-                                gl::FALSE as GLboolean, 0, ptr::null());
+        gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean, 0, ptr::null());
     }
-
 
     let mut playing = true;
     while playing {

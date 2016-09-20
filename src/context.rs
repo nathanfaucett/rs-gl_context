@@ -41,6 +41,8 @@ pub struct Context {
     max_varyings: usize,
     max_attributes: usize,
 
+    precision: &'static str,
+
     enabled_attributes: Vec<bool>,
 
     viewport_x: usize,
@@ -64,7 +66,6 @@ pub struct Context {
     current_vertex_array: GLuint,
 
     program: GLuint,
-    precision: &'static str,
     program_force: bool,
 
     texture_index: GLuint,
@@ -98,6 +99,8 @@ impl Context {
             max_varyings: 0,
             max_attributes: 0,
 
+            precision: HIGHP,
+
             enabled_attributes: Vec::new(),
 
             viewport_x: 0,
@@ -121,7 +124,6 @@ impl Context {
             current_vertex_array: 0,
 
             program: 0,
-            precision: HIGHP,
             program_force: false,
 
             texture_index: 0,
@@ -149,6 +151,7 @@ impl Context {
     pub fn get_max_attributes(&self) -> usize { self.max_attributes }
 
     pub fn get_precision(&self) -> &'static str { self.precision }
+    pub fn get_force(&self) -> bool { self.program_force }
 
     pub fn init(&mut self) -> &mut Self {
         self.reset()
@@ -176,6 +179,8 @@ impl Context {
         self.max_varyings = 0;
         self.max_attributes = 0;
 
+        self.precision = HIGHP;
+
         self.enabled_attributes.clear();
 
         self.viewport_x = 0;
@@ -197,7 +202,6 @@ impl Context {
         self.current_element_array_buffer = 0;
 
         self.program = 0;
-        self.precision = HIGHP;
         self.program_force = false;
 
         self.texture_index = 0;
@@ -211,12 +215,12 @@ impl Context {
     }
 
     fn gl_reset(&mut self) -> &mut Self {
-        if self.major < 4 {
-            unsafe { gl::Enable(gl::TEXTURE_2D); }
+        if self.major < 3 {
+            //unsafe { gl::Enable(gl::TEXTURE_2D); }
         }
         unsafe {
             gl::FrontFace(gl::CCW);
-            gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1 as GLint);
+            gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
         }
 
         self.disable_attributes();
@@ -289,7 +293,7 @@ impl Context {
     #[inline(always)]
     fn enable_blending(&mut self) {
         if self.blending_disabled {
-            unsafe { gl::Enable(gl::BLEND); }
+            //unsafe { gl::Enable(gl::BLEND); }
             self.blending_disabled = false;
         }
     }
@@ -342,7 +346,7 @@ impl Context {
     #[inline(always)]
     fn enable_cull_face(&mut self) {
         if self.cull_face_disabled {
-            unsafe { gl::Enable(gl::CULL_FACE); }
+            //unsafe { gl::Enable(gl::CULL_FACE); }
             self.cull_face_disabled = false;
         }
     }
@@ -379,7 +383,7 @@ impl Context {
     #[inline(always)]
     fn enable_depth_test(&mut self) {
         if self.depth_test_disabled {
-            unsafe { gl::Enable(gl::DEPTH_TEST); }
+            //unsafe { gl::Enable(gl::DEPTH_TEST); }
             self.depth_test_disabled = false;
         }
     }
@@ -469,10 +473,6 @@ impl Context {
     pub fn clear_bits(&mut self, bits: GLenum) -> &mut Self {
         unsafe { gl::Clear(bits); }
         self
-    }
-
-    pub fn force(&self) -> bool {
-        self.program_force
     }
 
     pub fn enable_attribute(&mut self, index: usize, force: bool) -> bool {
