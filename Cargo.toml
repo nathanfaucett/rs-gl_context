@@ -11,5 +11,5 @@ repository = "https://github.com/nathanfaucett/rs-gl_context.git"
 homepage = "https://github.com/nathanfaucett/rs-gl_context"
 
 [dependencies]
-gl = "0.6.0"
-regex = "0.1"
+gl = "0.6.1"
+regex = "0.1.75"

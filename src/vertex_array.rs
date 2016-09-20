@@ -1,3 +1,4 @@
+use core::mem;
 use core::ops::Drop;
 
 use gl;
@@ -6,13 +7,13 @@ use gl::types::*;
 
 #[derive(Debug)]
 pub struct VertexArray {
-    id: usize,
+    id: GLuint,
 }
 
 impl Drop for VertexArray {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteVertexArrays(1, &(self.id as GLuint) as *const _); }
+            unsafe { gl::DeleteVertexArrays(1, mem::transmute(&self.id)); }
         }
     }
 }
@@ -23,9 +24,9 @@ impl VertexArray {
             id: {
                 let mut id = 0;
                 unsafe { gl::GenVertexArrays(1, &mut id); }
-                id as usize
+                id
             },
         }
     }
-    pub fn id(&self) -> usize { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 }

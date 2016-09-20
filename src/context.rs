@@ -1,3 +1,4 @@
+use core::mem;
 use collections::vec::Vec;
 use collections::string::String;
 
@@ -18,27 +19,27 @@ static LOWP: &'static str = "lowp";
 
 #[derive(Debug)]
 pub struct Context {
-    version: String,
+    _version: String,
 
-    major: usize,
-    minor: usize,
-    glsl_major: usize,
-    glsl_minor: usize,
+    _major: usize,
+    _minor: usize,
+    _glsl_major: usize,
+    _glsl_minor: usize,
 
     extenstions: Vec<String>,
 
     clear_color: [f32; 4],
 
-    max_anisotropy: usize,
-    max_textures: usize,
-    max_vertex_textures: usize,
-    max_texture_size: usize,
-    max_cube_texture_size: usize,
-    max_render_buffer_size: usize,
+    _max_anisotropy: usize,
+    _max_textures: usize,
+    _max_vertex_textures: usize,
+    _max_texture_size: usize,
+    _max_cube_texture_size: usize,
+    _max_render_buffer_size: usize,
 
-    max_uniforms: usize,
-    max_varyings: usize,
-    max_attributes: usize,
+    _max_uniforms: usize,
+    _max_varyings: usize,
+    _max_attributes: usize,
 
     enabled_attributes: Vec<bool>,
 
@@ -57,45 +58,45 @@ pub struct Context {
     depth_write: bool,
     line_width: f32,
 
-    current_array_buffer: usize,
-    current_element_array_buffer: usize,
+    current_array_buffer: GLuint,
+    current_element_array_buffer: GLuint,
 
-    current_vertex_array: usize,
+    current_vertex_array: GLuint,
 
-    program: usize,
-    precision: &'static str,
+    program: GLuint,
+    _precision: &'static str,
     program_force: bool,
 
-    texture_index: usize,
-    current_texture_index: isize,
-    current_texture: usize,
+    texture_index: GLuint,
+    current_texture_index: GLint,
+    current_texture: GLuint,
 }
 
 impl Context {
 
     pub fn new() -> Self {
         Context {
-            version: String::new(),
+            _version: String::new(),
 
-            major: 0,
-            minor: 0,
-            glsl_major: 0,
-            glsl_minor: 0,
+            _major: 0,
+            _minor: 0,
+            _glsl_major: 0,
+            _glsl_minor: 0,
 
             extenstions: Vec::new(),
 
             clear_color: [0f32, 0f32, 0f32, 1f32],
 
-            max_anisotropy: 0,
-            max_textures: 0,
-            max_vertex_textures: 0,
-            max_texture_size: 0,
-            max_cube_texture_size: 0,
-            max_render_buffer_size: 0,
+            _max_anisotropy: 0,
+            _max_textures: 0,
+            _max_vertex_textures: 0,
+            _max_texture_size: 0,
+            _max_cube_texture_size: 0,
+            _max_render_buffer_size: 0,
 
-            max_uniforms: 0,
-            max_varyings: 0,
-            max_attributes: 0,
+            _max_uniforms: 0,
+            _max_varyings: 0,
+            _max_attributes: 0,
 
             enabled_attributes: Vec::new(),
 
@@ -120,7 +121,7 @@ impl Context {
             current_vertex_array: 0,
 
             program: 0,
-            precision: HIGHP,
+            _precision: HIGHP,
             program_force: false,
 
             texture_index: 0,
@@ -129,23 +130,23 @@ impl Context {
         }
     }
 
-    pub fn version(&self) -> String { self.version.clone() }
+    pub fn version(&self) -> String { self._version.clone() }
 
-    pub fn major(&self) -> usize { self.major }
-    pub fn minor(&self) -> usize { self.minor }
-    pub fn glsl_major(&self) -> usize { self.glsl_major }
-    pub fn glsl_minor(&self) -> usize { self.glsl_minor }
+    pub fn major(&self) -> usize { self._major }
+    pub fn minor(&self) -> usize { self._minor }
+    pub fn glsl_major(&self) -> usize { self._glsl_major }
+    pub fn glsl_minor(&self) -> usize { self._glsl_minor }
 
-    pub fn max_anisotropy(&self) -> usize { self.max_anisotropy }
-    pub fn max_textures(&self) -> usize { self.max_textures }
-    pub fn max_vertex_textures(&self) -> usize { self.max_vertex_textures }
-    pub fn max_texture_size(&self) -> usize { self.max_texture_size }
-    pub fn max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
-    pub fn max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
+    pub fn max_anisotropy(&self) -> usize { self._max_anisotropy }
+    pub fn max_textures(&self) -> usize { self._max_textures }
+    pub fn max_vertex_textures(&self) -> usize { self._max_vertex_textures }
+    pub fn max_texture_size(&self) -> usize { self._max_texture_size }
+    pub fn max_cube_texture_size(&self) -> usize { self._max_cube_texture_size }
+    pub fn max_render_buffer_size(&self) -> usize { self._max_render_buffer_size }
 
-    pub fn max_uniforms(&self) -> usize { self.max_uniforms }
-    pub fn max_varyings(&self) -> usize { self.max_varyings }
-    pub fn max_attributes(&self) -> usize { self.max_attributes }
+    pub fn max_uniforms(&self) -> usize { self._max_uniforms }
+    pub fn max_varyings(&self) -> usize { self._max_varyings }
+    pub fn max_attributes(&self) -> usize { self._max_attributes }
 
     pub fn init(&mut self) -> &mut Self {
         self.reset()
@@ -153,7 +154,7 @@ impl Context {
 
     pub fn reset(&mut self) -> &mut Self {
 
-        self.version.clear();
+        self._version.clear();
 
         self.extenstions.clear();
 
@@ -162,16 +163,16 @@ impl Context {
         self.clear_color[2] = 0f32;
         self.clear_color[3] = 1f32;
 
-        self.max_anisotropy = 0;
-        self.max_textures = 0;
-        self.max_vertex_textures = 0;
-        self.max_texture_size = 0;
-        self.max_cube_texture_size = 0;
-        self.max_render_buffer_size = 0;
+        self._max_anisotropy = 0;
+        self._max_textures = 0;
+        self._max_vertex_textures = 0;
+        self._max_texture_size = 0;
+        self._max_cube_texture_size = 0;
+        self._max_render_buffer_size = 0;
 
-        self.max_uniforms = 0;
-        self.max_varyings = 0;
-        self.max_attributes = 0;
+        self._max_uniforms = 0;
+        self._max_varyings = 0;
+        self._max_attributes = 0;
 
         self.enabled_attributes.clear();
 
@@ -194,7 +195,7 @@ impl Context {
         self.current_element_array_buffer = 0;
 
         self.program = 0;
-        self.precision = HIGHP;
+        self._precision = HIGHP;
         self.program_force = false;
 
         self.texture_index = 0;
@@ -202,15 +203,19 @@ impl Context {
         self.current_texture = 0;
 
         self.get_gl_info();
-        self.gl_reset()
+        self.gl_reset();
+
+        self
     }
 
     fn gl_reset(&mut self) -> &mut Self {
-
-        if self.major < 4 {
+        if self._major < 4 {
             unsafe { gl::Enable(gl::TEXTURE_2D); }
         }
-        unsafe { gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1); }
+        unsafe {
+            gl::FrontFace(gl::CCW);
+            gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1 as GLint);
+        }
 
         self.disable_attributes();
 
@@ -226,7 +231,7 @@ impl Context {
         self.set_cull_face_unchecked(cull_face);
         self.set_depth_func_unchecked(depth_func);
 
-        self.set_clear_color_unchecked(self.clear_color);
+        self.set_clear_color_unchecked(&self.clear_color);
         self.clear(true, true, true);
 
         self
@@ -234,7 +239,7 @@ impl Context {
 
     #[inline(always)]
     pub fn set_viewport_unchecked(&self, x: usize, y: usize, width: usize, height: usize) -> &Self {
-        unsafe { gl::Viewport(x as i32, y as i32, width as i32, height as i32); }
+        unsafe { gl::Viewport(x as GLint, y as GLint, width as GLsizei, height as GLsizei); }
         self
     }
     pub fn set_viewport(&mut self, x: usize, y: usize, width: usize, height: usize) -> &mut Self {
@@ -255,7 +260,7 @@ impl Context {
 
     #[inline(always)]
     pub fn set_depth_write_unchecked(&self, depth_write: bool) -> &Self {
-        unsafe { gl::DepthMask(if depth_write { 1 } else { 0 }); }
+        unsafe { gl::DepthMask(if depth_write {gl::TRUE} else {gl::FALSE}); }
         self
     }
     pub fn set_depth_write(&mut self, depth_write: bool) -> &mut Self {
@@ -268,7 +273,7 @@ impl Context {
 
     #[inline(always)]
     pub fn set_line_width_unchecked(&self, line_width: f32) -> &Self {
-        unsafe { gl::LineWidth(line_width); }
+        unsafe { gl::LineWidth(line_width as GLfloat); }
         self
     }
     pub fn set_line_width(&mut self, line_width: f32) -> &mut Self {
@@ -280,32 +285,38 @@ impl Context {
     }
 
     #[inline(always)]
-    pub fn set_blending_unchecked(&mut self, blending: Blending) -> &mut Self {
+    fn enable_blending(&mut self) {
         if self.blending_disabled {
             unsafe { gl::Enable(gl::BLEND); }
             self.blending_disabled = false;
         }
-
+    }
+    #[inline(always)]
+    pub fn set_blending_unchecked(&mut self, blending: Blending) -> &mut Self {
         match blending {
             Blending::Additive => {
+                self.enable_blending();
                 unsafe {
                     gl::BlendEquation(gl::FUNC_ADD);
                     gl::BlendFunc(gl::SRC_ALPHA, gl::ONE);
                 }
             },
             Blending::Subtractive => {
+                self.enable_blending();
                 unsafe {
                     gl::BlendEquation(gl::FUNC_ADD);
                     gl::BlendFunc(gl::ZERO, gl::ONE_MINUS_SRC_COLOR);
                 }
             },
             Blending::Multiply => {
+                self.enable_blending();
                 unsafe {
                     gl::BlendEquation(gl::FUNC_ADD);
                     gl::BlendFunc(gl::ZERO, gl::SRC_COLOR);
                 }
             },
             Blending::Default => {
+                self.enable_blending();
                 unsafe {
                     gl::BlendEquationSeparate(gl::FUNC_ADD, gl::FUNC_ADD);
                     gl::BlendFuncSeparate(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA, gl::ONE, gl::ONE_MINUS_SRC_ALPHA);
@@ -327,20 +338,25 @@ impl Context {
     }
 
     #[inline(always)]
-    pub fn set_cull_face_unchecked(&mut self, cull_face: CullFace) -> &mut Self {
+    fn enable_cull_face(&mut self) {
         if self.cull_face_disabled {
             unsafe { gl::Enable(gl::CULL_FACE); }
             self.cull_face_disabled = false;
         }
-
+    }
+    #[inline(always)]
+    pub fn set_cull_face_unchecked(&mut self, cull_face: CullFace) -> &mut Self {
         match cull_face {
             CullFace::Back => {
+                self.enable_cull_face();
                 unsafe { gl::CullFace(gl::BACK); }
             },
             CullFace::Front => {
+                self.enable_cull_face();
                 unsafe { gl::CullFace(gl::FRONT); }
             },
             CullFace::FrontAndBack => {
+                self.enable_cull_face();
                 unsafe { gl::CullFace(gl::FRONT_AND_BACK); }
             },
             CullFace::None => {
@@ -359,35 +375,45 @@ impl Context {
     }
 
     #[inline(always)]
-    pub fn set_depth_func_unchecked(&mut self, depth_func: Depth) -> &mut Self {
+    fn enable_depth_test(&mut self) {
         if self.depth_test_disabled {
             unsafe { gl::Enable(gl::DEPTH_TEST); }
             self.depth_test_disabled = false;
         }
-
+    }
+    #[inline(always)]
+    pub fn set_depth_func_unchecked(&mut self, depth_func: Depth) -> &mut Self {
         match depth_func {
             Depth::Never => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::NEVER); }
             },
             Depth::LessThan => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::LESS); }
             },
             Depth::Equal => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::EQUAL); }
             },
             Depth::LessThanOrEqual => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::LEQUAL); }
             },
             Depth::GreaterThan => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::GREATER); }
             },
             Depth::NotEqual => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::NOTEQUAL); }
             },
             Depth::GreaterThanOrEqual => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::GEQUAL); }
             },
             Depth::Always => {
+                self.enable_depth_test();
                 unsafe { gl::DepthFunc(gl::ALWAYS); }
             },
             Depth::None => {
@@ -406,20 +432,23 @@ impl Context {
     }
 
     #[inline(always)]
-    pub fn set_clear_color_unchecked(&self, color: [f32; 4]) -> &Self {
+    pub fn set_clear_color_unchecked<'a>(&self, color: &'a [f32; 4]) -> &Self {
         unsafe { gl::ClearColor(color[0], color[1], color[2], color[3]); }
         self
     }
-    pub fn set_clear_color(&mut self, color: [f32; 4]) -> &mut Self {
-        if self.clear_color != color {
-            self.clear_color = color;
+    pub fn set_clear_color<'a>(&mut self, color: &'a [f32; 4]) -> &mut Self {
+        if &self.clear_color != color {
+            self.clear_color[0] = color[0];
+            self.clear_color[1] = color[1];
+            self.clear_color[2] = color[2];
+            self.clear_color[3] = color[3];
             self.set_clear_color_unchecked(color);
         }
         self
     }
 
     pub fn clear(&mut self, color: bool, depth: bool, stencil: bool) -> &mut Self {
-        let mut bits = 0;
+        let mut bits: GLbitfield = 0;
 
         if color {
             bits = bits | gl::COLOR_BUFFER_BIT;
@@ -444,11 +473,11 @@ impl Context {
         self.program_force
     }
 
-    pub fn enable_attribute(&mut self, index: usize) -> bool {
+    pub fn enable_attribute(&mut self, index: usize, force: bool) -> bool {
         let ref mut value = self.enabled_attributes[index];
 
-        if !*value {
-            unsafe { gl::EnableVertexAttribArray(index as u32); }
+        if force || !*value {
+            unsafe { gl::EnableVertexAttribArray(index as GLuint); }
             *value = true;
             true
         } else {
@@ -459,7 +488,7 @@ impl Context {
         let ref mut value = self.enabled_attributes[index];
 
         if *value {
-            unsafe { gl::DisableVertexAttribArray(index as u32); }
+            unsafe { gl::DisableVertexAttribArray(index as GLuint); }
             *value = false;
             true
         } else {
@@ -468,7 +497,7 @@ impl Context {
     }
 
     fn disable_attributes(&mut self) {
-        let mut index = 0u32;
+        let mut index: GLuint = 0;
         let ref mut enabled_attributes = self.enabled_attributes;
 
         for value in enabled_attributes {
@@ -480,19 +509,19 @@ impl Context {
         }
     }
 
-    pub fn set_buffer(&mut self, buffer: &Buffer) -> bool {
+    pub fn set_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
         match buffer.kind() {
-            gl::ARRAY_BUFFER => self.set_array_buffer(buffer),
-            gl::ELEMENT_ARRAY_BUFFER => self.set_element_array_buffer(buffer),
+            gl::ARRAY_BUFFER => self.set_array_buffer(buffer, force),
+            gl::ELEMENT_ARRAY_BUFFER => self.set_element_array_buffer(buffer, force),
             _ => false,
         }
     }
-    pub fn remove_buffer(&mut self) -> bool {
-        if self.current_array_buffer != 0 || self.current_element_array_buffer != 0 {
+    pub fn remove_buffer(&mut self, force: bool) -> bool {
+        if force || self.current_array_buffer != 0 || self.current_element_array_buffer != 0 {
             self.disable_attributes();
             unsafe {
-                gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+                gl::BindBuffer(gl::ARRAY_BUFFER, 0 as GLuint);
+                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0 as GLuint);
             }
             self.current_array_buffer = 0;
             self.current_element_array_buffer = 0;
@@ -503,12 +532,12 @@ impl Context {
     }
 
     #[inline(always)]
-    fn set_array_buffer(&mut self, buffer: &Buffer) -> bool {
+    fn set_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
         let id = buffer.id();
 
-        if self.current_array_buffer != id {
+        if force || self.current_array_buffer != id {
             self.disable_attributes();
-            unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, id as GLuint); }
+            unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, id); }
             self.current_array_buffer = id;
             true
         } else {
@@ -516,12 +545,12 @@ impl Context {
         }
     }
     #[inline(always)]
-    fn set_element_array_buffer(&mut self, buffer: &Buffer) -> bool {
+    fn set_element_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
         let id = buffer.id();
 
-        if self.current_element_array_buffer != id {
+        if force || self.current_element_array_buffer != id {
             self.disable_attributes();
-            unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, id as GLuint); }
+            unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, id); }
             self.current_element_array_buffer = id;
             true
         } else {
@@ -530,17 +559,17 @@ impl Context {
     }
 
     pub fn set_attrib_pointer(
-        &mut self, location: usize, item_size: usize, kind: GLenum, stride: usize, offset: usize, force: bool
+        &mut self, location: GLuint, item_size: GLint, kind: GLenum, stride: GLsizei, offset: GLint, force: bool
     ) -> bool {
-        if self.enable_attribute(location as usize) || force {
+        if self.enable_attribute(location as usize, force) {
             unsafe {
                 gl::VertexAttribPointer(
-                    location as GLuint,
-                    item_size as GLint,
+                    location,
+                    item_size,
                     kind,
                     gl::FALSE,
-                    stride as GLsizei,
-                    offset as *const i32 as *const _
+                    stride,
+                    mem::transmute(&offset)
                 );
             }
             true
@@ -549,20 +578,20 @@ impl Context {
         }
     }
 
-    pub fn set_vertex_array(&mut self, vertex_array: &VertexArray) -> bool {
+    pub fn set_vertex_array(&mut self, vertex_array: &VertexArray, force: bool) -> bool {
         let id = vertex_array.id();
 
-        if self.current_vertex_array != id {
-            unsafe { gl::BindVertexArray(id as GLuint); }
+        if force || self.current_vertex_array != id {
+            unsafe { gl::BindVertexArray(id); }
             self.current_vertex_array = id;
             true
         } else {
             false
         }
     }
-    pub fn remove_vertex_array(&mut self) -> bool {
-        if self.current_vertex_array != 0 {
-            unsafe { gl::BindVertexArray(0); }
+    pub fn remove_vertex_array(&mut self, force: bool) -> bool {
+        if force || self.current_vertex_array != 0 {
+            unsafe { gl::BindVertexArray(0 as GLuint); }
             self.current_vertex_array = 0;
             true
         } else {
@@ -570,22 +599,22 @@ impl Context {
         }
     }
 
-    pub fn set_texture(&mut self, location: usize, texture: &Texture, force: bool) -> bool {
+    pub fn set_texture(&mut self, location: GLint, texture: &Texture, force: bool) -> bool {
         let id = texture.id();
         let index = self.texture_index;
         let current_texture_index = self.current_texture_index;
 
         self.texture_index = index + 1;
-        self.current_texture_index = index as isize;
+        self.current_texture_index = index as GLint;
 
-        if self.current_texture != id || force {
-            let needs_update = force || self.program_force || current_texture_index != index as isize;
+        if force || self.current_texture != id {
+            let needs_update = force || self.program_force || current_texture_index != index as GLint;
 
             if needs_update {
-                unsafe { gl::ActiveTexture(gl::TEXTURE0 + index as GLuint); }
-                unsafe { gl::Uniform1i(location as GLint, index as GLint); }
+                unsafe { gl::ActiveTexture(gl::TEXTURE0 + index); }
+                unsafe { gl::Uniform1i(location, index as GLint); }
             }
-            unsafe { gl::BindTexture(gl::TEXTURE_2D, id as GLuint); }
+            unsafe { gl::BindTexture(gl::TEXTURE_2D, id); }
 
             self.current_texture = id;
 
@@ -595,10 +624,10 @@ impl Context {
         }
     }
     pub fn remove_texture(&mut self, force: bool) -> bool {
-        if self.current_texture != 0 || force {
+        if force || self.current_texture != 0 {
             self.texture_index = 0;
             self.current_texture_index = -1;
-            unsafe { gl::BindTexture(gl::TEXTURE_2D, 0); }
+            unsafe { gl::BindTexture(gl::TEXTURE_2D, 0 as GLuint); }
             true
         } else {
             false
@@ -608,10 +637,10 @@ impl Context {
     pub fn set_program(&mut self, program: &Program, force: bool) -> bool {
         let id = program.id();
 
-        if self.program != id || force {
+        if force || self.program != id {
             self.program = id;
             self.program_force = true;
-            unsafe { gl::UseProgram(id as GLuint); }
+            unsafe { gl::UseProgram(id); }
         } else {
             if self.texture_index != 0 || self.current_texture_index != -1 {
                 self.program_force = true;
@@ -626,10 +655,10 @@ impl Context {
         true
     }
     pub fn remove_program(&mut self, force: bool) -> bool {
-        if self.program != 0 || force {
+        if force || self.program != 0 {
             self.program = 0;
             self.program_force = true;
-            unsafe { gl::UseProgram(0); }
+            unsafe { gl::UseProgram(0 as GLuint); }
         } else {
             if self.texture_index != 0 || self.current_texture_index != -1 {
                 self.program_force = true;
@@ -667,25 +696,59 @@ impl Context {
         }
     }
 
+    pub fn get_error(&self) -> GLenum {
+        unsafe { gl::GetError() }
+    }
+
     fn get_gl_info(&mut self) {
-        let mut vs_high_float_precision = 0i32;
-        let mut vs_high_float_range = 0i32;
-        unsafe { gl::GetShaderPrecisionFormat(gl::VERTEX_SHADER, gl::HIGH_FLOAT, &mut vs_high_float_range, &mut vs_high_float_precision); }
-        let mut vs_mediump_float_precision = 0i32;
-        let mut vs_mediump_float_range = 0i32;
-        unsafe { gl::GetShaderPrecisionFormat(gl::VERTEX_SHADER, gl::MEDIUM_FLOAT, &mut vs_mediump_float_range, &mut vs_mediump_float_precision); }
+        let mut vs_high_float_precision: GLint = 0;
+        let mut vs_high_float_range: GLint = 0;
+        unsafe {
+            gl::GetShaderPrecisionFormat(
+                gl::VERTEX_SHADER,
+                gl::HIGH_FLOAT,
+                &mut vs_high_float_range,
+                &mut vs_high_float_precision
+            );
+        }
 
-        let mut fs_high_float_precision = 0i32;
-        let mut fs_high_float_range = 0i32;
-        unsafe { gl::GetShaderPrecisionFormat(gl::FRAGMENT_SHADER, gl::HIGH_FLOAT, &mut fs_high_float_range, &mut fs_high_float_precision); }
-        let mut fs_mediump_float_precision = 0i32;
-        let mut fs_mediump_float_range = 0i32;
-        unsafe { gl::GetShaderPrecisionFormat(gl::FRAGMENT_SHADER, gl::MEDIUM_FLOAT, &mut fs_mediump_float_range, &mut fs_mediump_float_precision); }
+        let mut vs_mediump_float_precision: GLint = 0;
+        let mut vs_mediump_float_range: GLint = 0;
+        unsafe {
+            gl::GetShaderPrecisionFormat(
+                gl::VERTEX_SHADER,
+                gl::MEDIUM_FLOAT,
+                &mut vs_mediump_float_range,
+                &mut vs_mediump_float_precision
+            );
+        }
 
-        let highp_available = vs_high_float_precision as i32 > 0i32 && fs_high_float_precision as i32 > 0i32;
-        let mediump_available = vs_mediump_float_precision as i32 > 0i32 && fs_mediump_float_precision as i32 > 0i32;
+        let mut fs_high_float_precision: GLint = 0;
+        let mut fs_high_float_range: GLint = 0;
+        unsafe {
+            gl::GetShaderPrecisionFormat(
+                gl::FRAGMENT_SHADER,
+                gl::HIGH_FLOAT,
+                &mut fs_high_float_range,
+                &mut fs_high_float_precision
+            );
+        }
 
-        self.precision = if !highp_available {
+        let mut fs_mediump_float_precision: GLint = 0;
+        let mut fs_mediump_float_range: GLint = 0;
+        unsafe {
+            gl::GetShaderPrecisionFormat(
+                gl::FRAGMENT_SHADER,
+                gl::MEDIUM_FLOAT,
+                &mut fs_mediump_float_range,
+                &mut fs_mediump_float_precision
+            );
+        }
+
+        let highp_available = vs_high_float_precision > 0 && fs_high_float_precision > 0;
+        let mediump_available = vs_mediump_float_precision > 0 && fs_mediump_float_precision > 0;
+
+        self._precision = if !highp_available {
             if mediump_available {
                 MEDIUMP
             } else {
@@ -697,71 +760,71 @@ impl Context {
 
         unsafe {
             let ptr = gl::GetString(gl::VERSION);
-            string_from_ptr(ptr as usize, &mut self.version);
+            string_from_ptr(ptr, &mut self._version);
 
-            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version.as_str()).unwrap();
-
+            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self._version.as_str()).unwrap();
             let mut major = cap.at(1).unwrap_or("3").parse::<i32>().unwrap();
             let mut minor = cap.at(2).unwrap_or("1").parse::<i32>().unwrap();
 
             if major > 2 {
                 gl::GetIntegerv(gl::MAJOR_VERSION, &mut major);
-                self.major = major as usize;
+                self._major = major as usize;
                 gl::GetIntegerv(gl::MINOR_VERSION, &mut minor);
-                self.minor = minor as usize;
+                self._minor = minor as usize;
             }
 
-            parse_extenstions(&mut self.extenstions, self.major);
+            get_glsl_version(self._major, self._minor, &mut self._glsl_major, &mut self._glsl_minor);
+            parse_extenstions(&mut self.extenstions, self._major);
+        }
 
-            let mut glsl_major = 0;
-            let mut glsl_minor = 0;
-            get_glsl_version(self.major, self.minor, &mut glsl_major, &mut glsl_minor);
-            self.glsl_major = glsl_major;
-            self.glsl_minor = glsl_minor;
-
+        unsafe {
             let mut max_textures = 0;
             gl::GetIntegerv(gl::MAX_TEXTURE_IMAGE_UNITS, &mut max_textures);
-            self.max_textures = max_textures as usize;
+            self._max_textures = max_textures as usize;
 
             let mut max_vertex_textures = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_TEXTURE_IMAGE_UNITS, &mut max_vertex_textures);
-            self.max_vertex_textures = max_vertex_textures as usize;
+            self._max_vertex_textures = max_vertex_textures as usize;
 
             let mut max_texture_size = 0;
             gl::GetIntegerv(gl::MAX_TEXTURE_SIZE, &mut max_texture_size);
-            self.max_texture_size = max_texture_size as usize;
+            self._max_texture_size = max_texture_size as usize;
 
             let mut max_cube_texture_size = 0;
             gl::GetIntegerv(gl::MAX_CUBE_MAP_TEXTURE_SIZE, &mut max_cube_texture_size);
-            self.max_cube_texture_size = max_cube_texture_size as usize;
+            self._max_cube_texture_size = max_cube_texture_size as usize;
 
             let mut max_render_buffer_size = 0;
             gl::GetIntegerv(gl::MAX_RENDERBUFFER_SIZE, &mut max_render_buffer_size);
-            self.max_render_buffer_size = max_render_buffer_size as usize;
+            self._max_render_buffer_size = max_render_buffer_size as usize;
 
             let mut vs_max_uniforms = 0;
             let mut fs_max_uniforms = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_UNIFORM_VECTORS, &mut vs_max_uniforms);
             gl::GetIntegerv(gl::MAX_FRAGMENT_UNIFORM_VECTORS, &mut fs_max_uniforms);
-            self.max_uniforms = if vs_max_uniforms < fs_max_uniforms { vs_max_uniforms } else { fs_max_uniforms } as usize * 4;
+            self._max_uniforms = if vs_max_uniforms < fs_max_uniforms {
+                vs_max_uniforms
+            } else {
+                fs_max_uniforms
+            } as usize * 4;
 
             let mut max_varyings = 0;
             gl::GetIntegerv(gl::MAX_VARYING_VECTORS, &mut max_varyings);
-            self.max_varyings = max_varyings as usize * 4;
+            self._max_varyings = max_varyings as usize * 4;
 
             let mut max_attributes = 0;
             gl::GetIntegerv(gl::MAX_VERTEX_ATTRIBS, &mut max_attributes);
-            self.max_attributes = max_attributes as usize;
+            self._max_attributes = max_attributes as usize;
+        }
 
-            for _ in 0..self.max_attributes {
-                self.enabled_attributes.push(false);
-            }
+        for _ in 0..self._max_attributes {
+            self.enabled_attributes.push(false);
         }
     }
 }
 
-unsafe fn string_from_ptr(ptr: usize, string: &mut String) {
-    let mut i = ptr;
+unsafe fn string_from_ptr(ptr: *const u8, string: &mut String) {
+    let mut i = ptr as usize;
     loop {
         let ch = *(i as *const u8);
         if ch != 0 {
@@ -780,12 +843,12 @@ unsafe fn parse_extenstions(extenstions: &mut Vec<String>, major_version: usize)
 
         for i in 0..(count as u32) {
             let mut string = String::new();
-            string_from_ptr(gl::GetStringi(gl::EXTENSIONS, i) as usize, &mut string);
+            string_from_ptr(gl::GetStringi(gl::EXTENSIONS, i), &mut string);
             extenstions.push(string);
         }
     } else {
         let mut string = String::new();
-        string_from_ptr(gl::GetString(gl::EXTENSIONS) as usize, &mut string);
+        string_from_ptr(gl::GetString(gl::EXTENSIONS), &mut string);
 
         for extenstion in string.split_whitespace() {
             extenstions.push(String::from(extenstion));

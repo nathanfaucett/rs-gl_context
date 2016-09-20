@@ -12,7 +12,7 @@ pub trait Attribute: Debug {
     fn name(&self) -> String;
     fn kind(&self) -> GLenum;
     fn size(&self) -> usize;
-    fn location(&self) -> usize;
+    fn location(&self) -> GLint;
     fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool;
 }
 
@@ -21,37 +21,36 @@ macro_rules! create_attribute_struct {
     ($t: ident, $size: expr, $kind: expr) => (
         #[derive(Debug)]
         pub struct $t {
-            name: String,
-            kind: GLenum,
-            size: usize,
-            location: usize,
+            _name: String,
+            _kind: GLenum,
+            _size: usize,
+            _location: GLint,
         }
         impl $t {
-            pub fn new(name: String, kind: GLenum, size: usize, location: usize) -> Self {
+            pub fn new(name: String, kind: GLenum, size: usize, location: GLint) -> Self {
                 $t {
-                    name: name,
-                    kind: kind,
-                    size: size,
-                    location: location,
+                    _name: name,
+                    _kind: kind,
+                    _size: size,
+                    _location: location,
                 }
             }
         }
         impl Attribute for $t {
-            fn name(&self) -> String { self.name.clone() }
-            fn kind(&self) -> GLenum { self.kind }
-            fn size(&self) -> usize { self.size }
-            fn location(&self) -> usize { self.location }
+            fn name(&self) -> String { self._name.clone() }
+            fn kind(&self) -> GLenum { self._kind }
+            fn size(&self) -> usize { self._size }
+            fn location(&self) -> GLint { self._location }
             fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
                 let kind_size = buffer.kind_size();
 
-                context.set_buffer(buffer);
-
+                context.set_buffer(buffer, force);
                 context.set_attrib_pointer(
-                    self.location,
+                    self.location() as GLuint,
                     $size,
                     $kind,
-                    buffer.stride() * kind_size,
-                    offset * kind_size,
+                    (buffer.stride() * kind_size) as GLint,
+                    (offset * kind_size) as GLint,
                     force
                 )
             }
@@ -76,7 +75,7 @@ create_attribute_struct!(Attribute4b, 4, gl::BOOL);
 create_attribute_struct!(Attribute4i, 4, gl::INT);
 
 
-pub fn new_attribute(name: String, kind: GLenum, size: usize, location: usize) -> Box<Attribute> {
+pub fn new_attribute(name: String, kind: GLenum, size: usize, location: GLint) -> Box<Attribute> {
     match kind {
         gl::BOOL => Box::new(Attribute1i::new(name, kind, size, location)) as Box<Attribute>,
         gl::INT => Box::new(Attribute1i::new(name, kind, size, location)) as Box<Attribute>,

@@ -6,11 +6,12 @@ extern crate glutin;
 extern crate gl;
 
 
+use std::mem;
 use std::f32::consts::PI;
 
 use glutin::Window;
 use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
-use pseudo_random::Random;
+use pseudo_random::{Rng, Prng};
 
 
 static TO_RADS: f32 = PI / 180f32;
@@ -19,7 +20,7 @@ static TO_RADS: f32 = PI / 180f32;
 fn main() {
     let window = Window::new().unwrap();
 
-    let random = Random::new();
+    let mut random = Prng::new();
     random.set_seed(time::now().to_timespec().sec as usize);
 
     unsafe {
@@ -40,7 +41,7 @@ fn main() {
         context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
     );
 
-    let vertex = String::from("
+    let vertex = "
         #version 150
 
         uniform mat4 projection;
@@ -57,9 +58,9 @@ fn main() {
             v_uv = offset + uv;
             gl_Position = projection * model_view * vec4(position, 1.0);
         }
-    ");
+    ";
 
-    let fragment = String::from("
+    let fragment = "
         #version 150
 
         out vec4 frag_color;
@@ -71,7 +72,7 @@ fn main() {
         void main() {
             frag_color = texture2D(diffuse, v_uv);
         }
-    ");
+    ";
 
     let mut program = context.new_program();
     program.set(vertex, fragment);
@@ -97,18 +98,18 @@ fn main() {
     );
 
     let vertex_array = context.new_vertex_array();
-    context.set_vertex_array(&vertex_array);
+    context.set_vertex_array(&vertex_array, false);
 
     let mut buffer = context.new_buffer();
     buffer.set(gl::ARRAY_BUFFER, &[
         // vertices           uvs
-        1f32, 1f32, 0f32,     0f32, 0f32,
-        -1f32, 1f32, 0f32,    1f32, 0f32,
-        1f32, -1f32, 0f32,    0f32, 1f32,
+         1f32,  1f32, 0f32,   0f32, 0f32,
+        -1f32,  1f32, 0f32,   1f32, 0f32,
+         1f32, -1f32, 0f32,   0f32, 1f32,
         -1f32, -1f32, 0f32,   1f32, 1f32
     ], 5, gl::STATIC_DRAW);
 
-    context.remove_vertex_array();
+    context.remove_vertex_array(false);
 
     let mut perspective_matrix = mat4::new_identity::<f32>();
     let mut model_view = mat4::new_identity::<f32>();
@@ -117,11 +118,19 @@ fn main() {
     let mut color = [0f32, 0f32, 0f32, 1f32];
 
     let start_time = time::now();
-    let mut ms;
+    let mut last_time = start_time;
+    let mut current_time;
+    let mut ms = 0f32;
+    let mut dt;
 
     let mut playing = true;
 
     while playing {
+        current_time = time::now();
+        dt = (current_time - last_time).num_nanoseconds().unwrap() as f32 * 0.000001f32;
+        ms += dt;
+        last_time = current_time;
+
         for event in window.poll_events() {
             match event {
                 glutin::Event::Closed => {
@@ -135,13 +144,11 @@ fn main() {
             }
         }
 
-        ms = (time::now() - start_time).num_nanoseconds().unwrap() as f32 * 0.000001f32;
-
         color[0] = (ms * 0.000001f32).cos();
         color[1] = (ms * 0.0001f32).sin();
         color[2] = (ms * 0.001f32).cos();
 
-        context.set_clear_color(color);
+        context.set_clear_color(&color);
         context.clear(true, true, true);
 
         camera[0] = ((ms * 0.001f32) * 2f32).sin();
@@ -150,19 +157,22 @@ fn main() {
         offset[0] = (ms * 0.001f32).sin() * 0.5f32;
         offset[1] = (ms * 0.001f32).cos() * 0.5f32;
 
-        context.set_program(&program, false);
-
         mat4::set_position(&mut model_view, &camera);
 
-        context.set_vertex_array(&vertex_array);
+        context.set_program(&program, false);
 
-        program.set_attribute(String::from("position"), &mut context, &buffer, 0, false);
-        program.set_attribute(String::from("uv"), &mut context, &buffer, 3, false);
+        context.set_vertex_array(&vertex_array, false);
+        context.set_buffer(&buffer, false);
 
-        program.set_uniform(String::from("diffuse"), &mut context, &texture, false);
-        program.set_uniform_unchecked(String::from("offset"), &mut context, &offset, false);
-        program.set_uniform(String::from("projection"), &mut context, &perspective_matrix, false);
-        program.set_uniform_unchecked(String::from("model_view"), &mut context, &model_view, false);
+        program.set_attribute("position", &mut context, &buffer, 0, false);
+        program.set_attribute("uv", &mut context, &buffer, 3, false);
+
+        program.set_uniform("diffuse", &mut context, &texture, false);
+        program.set_uniform_unchecked("offset", &mut context, &offset, false);
+        program.set_uniform("projection", &mut context, &perspective_matrix, false);
+        program.set_uniform_unchecked("model_view", &mut context, &model_view, false);
+
+        context.remove_vertex_array(false);
 
         unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4); }
 

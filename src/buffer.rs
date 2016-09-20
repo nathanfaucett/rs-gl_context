@@ -7,21 +7,21 @@ use gl::types::*;
 
 #[derive(Debug)]
 pub struct Buffer {
-    id: usize,
+    _id: GLuint,
 
-    stride: usize,
-    kind: GLenum,
-    draw: GLenum,
+    _stride: usize,
+    _kind: GLenum,
+    _draw: GLenum,
 
-    size: usize,
-    kind_size: usize,
-    length: usize,
+    _size: usize,
+    _kind_size: usize,
+    _length: usize,
 }
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        if self.id != 0 {
-            unsafe { gl::DeleteBuffers(1, &(self.id as GLuint) as *const _); }
+        if self._id != 0 {
+            unsafe { gl::DeleteBuffers(1, mem::transmute(&self._id)); }
         }
     }
 }
@@ -30,31 +30,31 @@ impl Buffer {
 
     pub fn new() -> Self {
         Buffer {
-            id: {
+            _id: {
                 let mut id = 0;
                 unsafe { gl::GenBuffers(1, &mut id); }
-                id as usize
+                id
             },
 
-            stride: 0,
-            kind: 0,
-            draw: 0,
+            _stride: 0,
+            _kind: 0,
+            _draw: 0,
 
-            size: 0,
-            kind_size: 0,
-            length: 0,
+            _size: 0,
+            _kind_size: 0,
+            _length: 0,
         }
     }
 
-    pub fn id(&self) -> usize { self.id }
+    pub fn id(&self) -> GLuint { self._id }
 
-    pub fn stride(&self) -> usize { self.stride }
-    pub fn kind(&self) -> GLenum { self.kind }
-    pub fn draw(&self) -> GLenum { self.draw }
+    pub fn stride(&self) -> usize { self._stride }
+    pub fn kind(&self) -> GLenum { self._kind }
+    pub fn draw(&self) -> GLenum { self._draw }
 
-    pub fn size(&self) -> usize { self.size }
-    pub fn kind_size(&self) -> usize { self.kind_size }
-    pub fn length(&self) -> usize { self.length }
+    pub fn size(&self) -> usize { self._size }
+    pub fn kind_size(&self) -> usize { self._kind_size }
+    pub fn length(&self) -> usize { self._length }
 
     pub fn set<T>(&mut self, kind: GLenum, array: &[T], stride: usize, draw: GLenum) -> &mut Self {
         let length = array.len();
@@ -62,18 +62,18 @@ impl Buffer {
         let size = kind_size * length;
 
         unsafe {
-            gl::BindBuffer(kind, self.id as GLuint);
+            gl::BindBuffer(kind, self._id);
     		gl::BufferData(kind, size as GLsizeiptr, mem::transmute(array.as_ptr()), draw);
     		gl::BindBuffer(kind, 0);
         };
 
-        self.stride = stride;
-        self.kind = kind;
-        self.draw = draw;
+        self._stride = stride;
+        self._kind = kind;
+        self._draw = draw;
 
-        self.size = size;
-        self.kind_size = kind_size;
-        self.length = length;
+        self._size = size;
+        self._kind_size = kind_size;
+        self._length = length;
 
         self
     }

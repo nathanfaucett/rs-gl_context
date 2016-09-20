@@ -1,7 +1,8 @@
-#![no_std]
+//#![no_std]
 #![feature(collections)]
 
 
+extern crate core;
 extern crate collections;
 
 extern crate regex;
@@ -22,6 +23,6 @@ pub use attribute::*;
 pub use uniform::*;
 pub use buffer::Buffer;
 pub use context::Context;
-pub use program::Program;
+pub use program::{Program, link_program, compile_shader};
 pub use texture::Texture;
 pub use vertex_array::VertexArray;

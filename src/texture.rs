@@ -1,3 +1,4 @@
+use core::mem;
 use core::ops::Drop;
 
 use gl;
@@ -9,13 +10,13 @@ use enums::{TextureFormat, TextureWrap, TextureKind, FilterMode};
 
 #[derive(Debug)]
 pub struct Texture {
-    id: usize,
+    id: GLuint,
 }
 
 impl Drop for Texture {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteTextures(1, &(self.id as GLuint) as *const _); }
+            unsafe { gl::DeleteTextures(1, mem::transmute(&self.id)); }
         }
     }
 }
@@ -27,12 +28,12 @@ impl Texture {
             id: {
                 let mut id = 0;
                 unsafe { gl::GenTextures(1, &mut id); }
-                id as usize
+                id
             },
         }
     }
 
-    pub fn id(&self) -> usize { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
     pub fn set<T>(
         &mut self,
