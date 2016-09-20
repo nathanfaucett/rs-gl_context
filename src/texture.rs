@@ -76,7 +76,7 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, wrap);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, wrap);
 
-            gl::TexImage2D(gl::TEXTURE_2D, 0, format as GLint, width as i32, height as i32, 0, format, kind, data.as_ptr() as *const _);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, format as GLint, width as GLsizei, height as GLsizei, 0, format, kind, mem::transmute(data.as_ptr()));
 
             if generate_mipmap && pot {
                 if major >= 4 && minor >= 5 {

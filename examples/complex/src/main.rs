@@ -17,44 +17,44 @@ use pseudo_random::{Rng, Prng};
 static TO_RADS: f32 = PI / 180f32;
 
 static VS:  &'static str = "
-    #version 150
+    #version 140
 
     uniform mat4 projection;
     uniform mat4 model_view;
 
     uniform vec2 offset;
 
-    attribute vec3 position;
-    attribute vec2 uv;
+    in vec2 position;
+    in vec2 uv;
 
-    varying vec2 v_uv;
+    out vec2 v_uv;
 
     void main() {
+        gl_Position = projection * model_view * vec4(position, 0.0, 1.0);
         v_uv = offset + uv;
-        gl_Position = projection * model_view * vec4(position, 1.0);
     }
 ";
 
 static FS:  &'static str = "
-    #version 150
-
-    out vec4 frag_color;
+    #version 140
 
     uniform sampler2D diffuse;
 
-    varying vec2 v_uv;
+    in vec2 v_uv;
+
+    out vec4 frag_color;
 
     void main() {
-        frag_color = texture2D(diffuse, v_uv);
+        frag_color = texture(diffuse, v_uv);
     }
 ";
 
-static DATA: [GLfloat; 20] = [
+static DATA: [GLfloat; 16] = [
     // vertices           uvs
-     1f32,  1f32, 0f32,   0f32, 0f32,
-    -1f32,  1f32, 0f32,   1f32, 0f32,
-     1f32, -1f32, 0f32,   0f32, 1f32,
-    -1f32, -1f32, 0f32,   1f32, 1f32
+     1f32,  1f32,   0f32, 0f32,
+    -1f32,  1f32,   1f32, 0f32,
+     1f32, -1f32,   0f32, 1f32,
+    -1f32, -1f32,   1f32, 1f32
 ];
 
 fn main() {
@@ -108,7 +108,7 @@ fn main() {
     context.set_vertex_array(&vertex_array, false);
 
     let mut buffer = context.new_buffer();
-    buffer.set(gl::ARRAY_BUFFER, &DATA, 5, gl::STATIC_DRAW);
+    buffer.set(gl::ARRAY_BUFFER, &DATA, 4, gl::STATIC_DRAW);
 
     context.remove_vertex_array(false);
 
@@ -166,16 +166,12 @@ fn main() {
         context.set_buffer(&buffer, false);
 
         program.set_attribute("position", &mut context, &buffer, 0, false);
-        program.set_attribute("uv", &mut context, &buffer, 3, false);
+        program.set_attribute("uv", &mut context, &buffer, 2, false);
 
         program.set_uniform("diffuse", &mut context, &texture, false);
-        println!("{:?}", context.get_error());
         program.set_uniform_unchecked("offset", &mut context, &offset, false);
-        println!("{:?}", context.get_error());
         program.set_uniform("projection", &mut context, &perspective_matrix, false);
-        println!("{:?}", context.get_error());
         program.set_uniform_unchecked("model_view", &mut context, &model_view, false);
-        println!("{:?}", context.get_error());
 
         unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4); }
 

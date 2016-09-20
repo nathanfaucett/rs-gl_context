@@ -98,7 +98,7 @@ macro_rules! create_simple_uniform {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
                         self.value = Some(value.clone());
-                        unsafe { gl::$func(self.location, $item_count, value as *const _); }
+                        unsafe { gl::$func(self.location, 1, value.as_ptr()); }
                         true
                     },
                     None => panic!("Invalid value passed to {:?}", self.name),
@@ -110,14 +110,14 @@ macro_rules! create_simple_uniform {
                         if let Some(v) = self.value {
                             if force || v != *value {
                                 self.value = Some(value.clone());
-                                unsafe { gl::$func(self.location, $item_count, value as *const _); }
+                                unsafe { gl::$func(self.location, 1, value.as_ptr()); }
                                 true
                             } else {
                                 false
                             }
                         } else {
                             self.value = Some(value.clone());
-                            unsafe { gl::$func(self.location, $item_count, value as *const _); }
+                            unsafe { gl::$func(self.location, 1, value.as_ptr()); }
                             true
                         }
                     },
@@ -178,7 +178,7 @@ macro_rules! create_matrix_uniform {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
                         self.value = Some(value.clone());
-                        unsafe { gl::$func(self.location, 1, gl::FALSE, value as *const _); }
+                        unsafe { gl::$func(self.location, 1, gl::FALSE, value.as_ptr()); }
                         true
                     },
                     None => panic!("Invalid value passed to {:?}", self.name),
@@ -190,14 +190,14 @@ macro_rules! create_matrix_uniform {
                         if let Some(v) = self.value {
                             if force || v != *value {
                                 self.value = Some(value.clone());
-                                unsafe { gl::$func(self.location, 1, gl::FALSE, value as *const _); }
+                                unsafe { gl::$func(self.location, 1, gl::FALSE, value.as_ptr()); }
                                 true
                             } else {
                                 false
                             }
                         } else {
                             self.value = Some(value.clone());
-                            unsafe { gl::$func(self.location, 1, gl::FALSE, value as *const _); }
+                            unsafe { gl::$func(self.location, 1, gl::FALSE, value.as_ptr()); }
                             true
                         }
                     },
@@ -247,11 +247,11 @@ macro_rules! create_size_simple_uniform {
             fn get_size(&self) -> usize { self.size }
             fn get_location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
-                unsafe { gl::$func(self.location, $item_count, (((value as *const Any) as *const $kind) as usize) as *const _); }
+                unsafe { gl::$func(self.location, self.size as GLint, (((value as *const Any) as *const $kind) as usize) as *const _); }
                 true
             }
             fn set(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
-                unsafe { gl::$func(self.location, $item_count, (((value as *const Any) as *const $kind) as usize) as *const _); }
+                unsafe { gl::$func(self.location, self.size as GLint, (((value as *const Any) as *const $kind) as usize) as *const _); }
                 true
             }
         }

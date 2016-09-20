@@ -1,5 +1,3 @@
-use core::ptr;
-use core::mem;
 use collections::vec::Vec;
 use collections::string::String;
 
@@ -216,9 +214,6 @@ impl Context {
     }
 
     fn gl_reset(&mut self) -> &mut Self {
-        if self.major < 3 {
-            //unsafe { gl::Enable(gl::TEXTURE_2D); }
-        }
         unsafe {
             gl::FrontFace(gl::CCW);
             gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
@@ -572,8 +567,7 @@ impl Context {
                     kind,
                     gl::FALSE,
                     stride,
-                    // TODO fix offset
-                    ptr::null()
+                    offset as *const _
                 );
             }
             true
