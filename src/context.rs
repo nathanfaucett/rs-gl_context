@@ -1,3 +1,4 @@
+use core::ptr;
 use core::mem;
 use collections::vec::Vec;
 use collections::string::String;
@@ -571,7 +572,8 @@ impl Context {
                     kind,
                     gl::FALSE,
                     stride,
-                    mem::transmute(&offset)
+                    // TODO fix offset
+                    ptr::null()
                 );
             }
             true
@@ -593,7 +595,7 @@ impl Context {
     }
     pub fn remove_vertex_array(&mut self, force: bool) -> bool {
         if force || self.current_vertex_array != 0 {
-            unsafe { gl::BindVertexArray(0 as GLuint); }
+            unsafe { gl::BindVertexArray(0); }
             self.current_vertex_array = 0;
             true
         } else {

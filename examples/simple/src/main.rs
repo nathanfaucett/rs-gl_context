@@ -2,11 +2,9 @@ extern crate gl;
 extern crate glutin;
 extern crate gl_context;
 
+
 use gl::types::*;
-use std::mem;
-use std::ptr;
-use std::str;
-use gl_context::{Context, link_program, compile_shader};
+use gl_context::{Context};
 
 
 static VERTEX_DATA: [GLfloat; 6] = [
@@ -15,19 +13,25 @@ static VERTEX_DATA: [GLfloat; 6] = [
     -0.5, -0.5
 ];
 
-static VS_SRC: &'static str =
-   "#version 150\n\
-    in vec2 position;\n\
-    void main() {\n\
-       gl_Position = vec4(position, 0.0, 1.0);\n\
-    }";
+static VS_SRC: &'static str = "
+    #version 150
 
-static FS_SRC: &'static str =
-   "#version 150\n\
-    out vec4 out_color;\n\
-    void main() {\n\
-       out_color = vec4(1.0, 1.0, 1.0, 1.0);\n\
-    }";
+    in vec2 position;
+    
+    void main() {
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+";
+
+static FS_SRC: &'static str = "
+    #version 150
+
+    out vec4 out_color;
+
+    void main() {
+        out_color = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+";
 
 fn main() {
     let window = glutin::Window::new().unwrap();
@@ -49,31 +53,17 @@ fn main() {
         context.get_major(), context.get_minor(), context.get_glsl_major(), context.get_glsl_minor()
     );
 
-    let vs = compile_shader(VS_SRC, gl::VERTEX_SHADER);
-    let fs = compile_shader(FS_SRC, gl::FRAGMENT_SHADER);
-    let program = link_program(vs, fs);
+    let mut program = context.new_program();
+    program.set(VS_SRC, FS_SRC);
 
-    let mut vao = 0;
-    let mut vbo = 0;
+    let vertex_array = context.new_vertex_array();
+    context.set_vertex_array(&vertex_array, false);
 
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
+    let mut buffer = context.new_buffer();
+    buffer.set(gl::ARRAY_BUFFER, &VERTEX_DATA, 0, gl::STATIC_DRAW);
 
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(gl::ARRAY_BUFFER,
-                       (VERTEX_DATA.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
-                       mem::transmute(VERTEX_DATA.as_ptr()),
-                       gl::STATIC_DRAW);
-
-        gl::UseProgram(program);
-        gl::BindFragDataLocation(program, 0, mem::transmute("out_color\0".as_ptr()));
-
-        let pos_attr = gl::GetAttribLocation(program, mem::transmute("position\0".as_ptr()));
-        gl::EnableVertexAttribArray(pos_attr as GLuint);
-        gl::VertexAttribPointer(pos_attr as GLuint, 2, gl::FLOAT, gl::FALSE as GLboolean, 0, ptr::null());
-    }
+    context.set_program(&program, false);
+    program.set_attribute("position", &mut context, &buffer, 0, false);
 
     let mut playing = true;
     while playing {
@@ -89,24 +79,14 @@ fn main() {
             }
         }
 
-        unsafe {
-            gl::ClearColor(0.3, 0.3, 0.3, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+        context.clear(true, true, true);
+        context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
 
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
-        }
+        unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
 
         match window.swap_buffers() {
             Ok(_) => (),
             Err(e) => panic!("{:?}", e),
         }
-    }
-
-    unsafe {
-        gl::DeleteProgram(program);
-        gl::DeleteShader(fs);
-        gl::DeleteShader(vs);
-        gl::DeleteBuffers(1, &vbo);
-        gl::DeleteVertexArrays(1, &vao);
     }
 }
