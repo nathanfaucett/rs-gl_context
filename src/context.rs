@@ -109,7 +109,7 @@ impl Context {
 
             blending: Blending::Default,
             cull_face: CullFace::Back,
-            depth_func: Depth::Always,
+            depth_func: Depth::LessThan,
 
             blending_disabled: true,
             cull_face_disabled: true,
@@ -189,7 +189,7 @@ impl Context {
 
         self.blending = Blending::Default;
         self.cull_face = CullFace::Back;
-        self.depth_func = Depth::Always;
+        self.depth_func = Depth::LessThan;
 
         self.blending_disabled = true;
         self.cull_face_disabled = true;

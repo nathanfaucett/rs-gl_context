@@ -4,7 +4,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::Context;
+use gl_context::{Context, Depth};
 
 
 static VERTEX_DATA: [GLfloat; 6] = [
@@ -19,7 +19,7 @@ static VS_SRC: &'static str = "
     in vec2 position;
 
     void main() {
-        gl_Position = vec4(position, 0.0, 1.0);
+        gl_Position = vec4(position, 0, 1.0);
     }
 ";
 
@@ -47,6 +47,7 @@ fn main() {
     }
 
     context.init();
+    context.set_depth_func(Depth::Always);
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
@@ -55,6 +56,7 @@ fn main() {
 
     let mut program = context.new_program();
     program.set(VS_SRC, FS_SRC);
+    context.set_program(&program, false);
 
     let vertex_array = context.new_vertex_array();
     context.set_vertex_array(&vertex_array, false);
@@ -62,7 +64,6 @@ fn main() {
     let mut buffer = context.new_buffer();
     buffer.set(gl::ARRAY_BUFFER, &VERTEX_DATA, 0, gl::STATIC_DRAW);
 
-    context.set_program(&program, false);
     program.set_attribute("position", &mut context, &buffer, 0, false);
 
     let mut playing = true;

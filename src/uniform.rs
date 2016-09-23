@@ -101,7 +101,11 @@ macro_rules! create_simple_uniform {
                         unsafe { gl::$func(self.location, 1, value.as_ptr()); }
                         true
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!(
+                        "Invalid value passed to {:?} expected {:?}",
+                        self.name,
+                        stringify!([$kind; $item_count])
+                    ),
                 }
             }
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
@@ -121,7 +125,11 @@ macro_rules! create_simple_uniform {
                             true
                         }
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!(
+                        "Invalid value passed to {:?} expected {:?}",
+                        self.name,
+                        stringify!([$kind; $item_count])
+                    ),
                 }
             }
         }
@@ -141,7 +149,7 @@ macro_rules! create_simple_single_uniform {
                         unsafe { gl::$func(self.location, value.clone()); }
                         true
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!("Invalid value passed to {:?} expected {:?}", self.name, stringify!($kind)),
                 }
             }
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
@@ -161,7 +169,7 @@ macro_rules! create_simple_single_uniform {
                             true
                         }
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!("Invalid value passed to {:?} expected {:?}", self.name, stringify!($kind)),
                 }
             }
         }
@@ -181,7 +189,11 @@ macro_rules! create_matrix_uniform {
                         unsafe { gl::$func(self.location, 1, gl::FALSE, value.as_ptr()); }
                         true
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!(
+                        "Invalid value passed to {:?} expected {:?}",
+                        self.name,
+                        stringify!([$kind; $item_count])
+                    ),
                 }
             }
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
@@ -201,7 +213,11 @@ macro_rules! create_matrix_uniform {
                             true
                         }
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!(
+                        "Invalid value passed to {:?} expected {:?}",
+                        self.name,
+                        stringify!([$kind; $item_count])
+                    ),
                 }
             }
         }
@@ -319,7 +335,7 @@ macro_rules! create_texture_uniform {
                     Some(texture) => {
                         context.set_texture(self.location, texture, force);
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!("Invalid value passed to {:?} expected Texture", self.name),
                 }
                 true
             }
@@ -328,7 +344,7 @@ macro_rules! create_texture_uniform {
                     Some(texture) => {
                         context.set_texture(self.location, texture, force);
                     },
-                    None => panic!("Invalid value passed to {:?}", self.name),
+                    None => panic!("Invalid value passed to {:?} expected Texture", self.name),
                 }
                 true
             }
