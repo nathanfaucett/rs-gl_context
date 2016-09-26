@@ -56,10 +56,10 @@ static FS:  &'static str = "
 
 static DATA: [GLfloat; 16] = [
     // vertices           uvs
-     1f32,  1f32,   0f32, 0f32,
-    -1f32,  1f32,   1f32, 0f32,
-     1f32, -1f32,   0f32, 1f32,
-    -1f32, -1f32,   1f32, 1f32
+    1f32,  1f32,   1f32, 1f32,
+   -1f32,  1f32,   0f32, 1f32,
+    1f32, -1f32,   1f32, 0f32,
+   -1f32, -1f32,   0f32, 0f32
 ];
 
 fn main() {
@@ -98,7 +98,7 @@ fn main() {
     }
 
     let mut texture = context.new_texture();
-    texture.set(
+    texture.set_data2d(
         &context,
         TEX_WIDTH,
         TEX_HEIGHT,
@@ -175,7 +175,6 @@ fn main() {
         context.set_program(&program, false);
 
         context.set_vertex_array(&vertex_array, false);
-        context.set_buffer(&buffer, false);
 
         program.set_attribute("position", &mut context, &buffer, 0, false);
         program.set_attribute("uv", &mut context, &buffer, 2, false);

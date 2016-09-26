@@ -67,10 +67,10 @@ impl Program {
         let vs = compile_shader(vertex, gl::VERTEX_SHADER);
         let fs = compile_shader(fragment, gl::FRAGMENT_SHADER);
         let id = link_program(vs, fs);
-        self.setid(id)
+        self.set_program_id(id)
     }
 
-    pub fn setid(&mut self, id: GLuint) -> &mut Self {
+    pub fn set_program_id(&mut self, id: GLuint) -> &mut Self {
         {
             let ref mut uniforms = self.uniforms;
             let ref mut attributes = self.attributes;
@@ -84,6 +84,7 @@ impl Program {
             self.id = id;
             parse_uniforms(id, uniforms);
             parse_attributes(id, attributes);
+            unsafe { gl::UseProgram(0) };
         }
         self
     }

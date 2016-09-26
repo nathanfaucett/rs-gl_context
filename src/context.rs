@@ -9,6 +9,8 @@ use buffer::Buffer;
 use program::Program;
 use texture::Texture;
 use vertex_array::VertexArray;
+use framebuffer::Framebuffer;
+use renderbuffer::Renderbuffer;
 
 
 static HIGHP: &'static str = "highp";
@@ -63,6 +65,8 @@ pub struct Context {
     current_element_array_buffer: GLuint,
 
     current_vertex_array: GLuint,
+    current_framebuffer: GLuint,
+    current_renderbuffer: GLuint,
 
     program: GLuint,
     program_force: bool,
@@ -121,6 +125,8 @@ impl Context {
             current_element_array_buffer: 0,
 
             current_vertex_array: 0,
+            current_framebuffer: 0,
+            current_renderbuffer: 0,
 
             program: 0,
             program_force: false,
@@ -200,6 +206,10 @@ impl Context {
         self.current_array_buffer = 0;
         self.current_element_array_buffer = 0;
 
+        self.current_vertex_array = 0;
+        self.current_framebuffer = 0;
+        self.current_renderbuffer = 0;
+
         self.program = 0;
         self.program_force = false;
 
@@ -209,6 +219,21 @@ impl Context {
 
         self.get_gl_info();
         self.gl_reset();
+
+        self
+    }
+
+    pub fn soft_reset(&mut self) -> &mut Self {
+
+        self.clear_color[0] = 0f32;
+        self.clear_color[1] = 0f32;
+        self.clear_color[2] = 0f32;
+        self.clear_color[3] = 1f32;
+
+        self.viewport_x = 0;
+        self.viewport_y = 0;
+        self.viewport_width = 1;
+        self.viewport_height = 1;
 
         self
     }
@@ -597,6 +622,50 @@ impl Context {
         }
     }
 
+    pub fn set_framebuffer(&mut self, framebuffer: &Framebuffer, force: bool) -> bool {
+        let id = framebuffer.get_id();
+
+        if force || self.current_framebuffer != id {
+            unsafe { gl::BindFramebuffer(gl::FRAMEBUFFER, id); }
+            self.current_framebuffer = id;
+            self.soft_reset();
+            true
+        } else {
+            false
+        }
+    }
+    pub fn remove_framebuffer(&mut self, force: bool) -> bool {
+        if force || self.current_framebuffer != 0 {
+            unsafe { gl::BindFramebuffer(gl::FRAMEBUFFER, 0); }
+            self.current_framebuffer = 0;
+            self.soft_reset();
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_renderbuffer(&mut self, renderbuffer: &Renderbuffer, force: bool) -> bool {
+        let id = renderbuffer.get_id();
+
+        if force || self.current_renderbuffer != id {
+            unsafe { gl::BindRenderbuffer(gl::RENDERBUFFER, id); }
+            self.current_renderbuffer = id;
+            true
+        } else {
+            false
+        }
+    }
+    pub fn remove_renderbuffer(&mut self, force: bool) -> bool {
+        if force || self.current_renderbuffer != 0 {
+            unsafe { gl::BindRenderbuffer(gl::RENDERBUFFER, 0); }
+            self.current_renderbuffer = 0;
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn set_texture(&mut self, location: GLint, texture: &Texture, force: bool) -> bool {
         let id = texture.get_id();
         let index = self.texture_index;
@@ -671,20 +740,23 @@ impl Context {
         true
     }
 
-    pub fn new_program(&self) -> Program {
-        Program::new()
-    }
-
     pub fn new_buffer(&self) -> Buffer {
         Buffer::new()
     }
-
-    pub fn new_vertex_array(&self) -> VertexArray {
-        VertexArray::new()
+    pub fn new_framebuffer(&self) -> Framebuffer {
+        Framebuffer::new()
     }
-
+    pub fn new_program(&self) -> Program {
+        Program::new()
+    }
+    pub fn new_renderbuffer(&self) -> Renderbuffer {
+        Renderbuffer::new()
+    }
     pub fn new_texture(&self) -> Texture {
         Texture::new()
+    }
+    pub fn new_vertex_array(&self) -> VertexArray {
+        VertexArray::new()
     }
 
     pub fn has_extenstion(&self, string: String) -> bool {
