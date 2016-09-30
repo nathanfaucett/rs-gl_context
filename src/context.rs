@@ -4,6 +4,7 @@ use collections::string::String;
 use gl;
 use gl::types::*;
 use regex::Regex;
+
 use enums::*;
 use buffer::Buffer;
 use program::Program;

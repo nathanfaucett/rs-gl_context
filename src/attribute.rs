@@ -1,9 +1,11 @@
-use core::fmt::Debug;
-use collections::boxed::Box;
+use alloc::boxed::Box;
 use collections::string::String;
+
+use core::fmt::Debug;
 
 use gl;
 use gl::types::*;
+
 use context::Context;
 use buffer::Buffer;
 

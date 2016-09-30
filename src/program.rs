@@ -1,12 +1,13 @@
+use alloc::boxed::Box;
+use collections::vec::Vec;
+use collections::str;
+use collections::string::String;
+use collections::btree_map::BTreeMap;
+
 use core::ptr;
 use core::mem;
 use core::ops::Drop;
 use core::any::Any;
-use collections::vec::Vec;
-use collections::boxed::Box;
-use collections::str;
-use collections::string::String;
-use collections::btree_map::BTreeMap;
 
 use gl;
 use gl::types::*;

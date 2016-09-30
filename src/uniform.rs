@@ -1,7 +1,8 @@
+use alloc::boxed::Box;
+use collections::string::String;
+
 use core::fmt::Debug;
 use core::any::Any;
-use collections::boxed::Box;
-use collections::string::String;
 
 use gl;
 use gl::types::*;
