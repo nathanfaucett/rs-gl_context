@@ -1,6 +1,8 @@
 use collections::vec::Vec;
 use collections::string::String;
 
+use core::mem;
+
 use gl;
 use gl::types::*;
 use regex::Regex;
@@ -593,7 +595,7 @@ impl Context {
                     kind,
                     gl::FALSE,
                     stride,
-                    offset as *const _
+                    mem::transmute(offset as usize)
                 );
             }
             true
