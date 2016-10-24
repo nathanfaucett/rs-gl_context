@@ -133,6 +133,7 @@ fn main() {
     let mut playing = true;
     let mut width = 512;
     let mut height = 512;
+    static SIZE: usize = 8;
     while playing {
 
         for event in window.poll_events() {
@@ -143,19 +144,30 @@ fn main() {
                 glutin::Event::Resized(w, h) => {
                     width = w as usize;
                     height = h as usize;
+
+                    fb_texture.set_null2d(
+                        &context,
+                        width / SIZE,
+                        height / SIZE,
+                        TextureFormat::RGBA,
+                        TextureKind::UnsignedByte,
+                        TextureWrap::Clamp,
+                        FilterMode::None,
+                        false
+                    );
+                    framebuffer.set(&context, &fb_texture, &[gl::COLOR_ATTACHMENT0], 0);
+                    renderbuffer.set(&context, TextureKind::DepthComponent, width / SIZE, height / SIZE);
                 },
                 _ => (),
             }
         }
 
-
         context.set_framebuffer(&framebuffer, false);
         context.set_renderbuffer(&renderbuffer, false);
 
-        context.set_viewport(0, 0, 256, 256);
+        context.set_viewport(0, 0, width / SIZE, height / SIZE);
         context.clear(true, true, true);
         context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
-
 
         context.set_program(&tr_program, false);
         context.set_vertex_array(&tr_vertex_array, false);
