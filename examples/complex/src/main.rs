@@ -1,4 +1,5 @@
 extern crate pseudo_random;
+extern crate rng;
 extern crate time;
 extern crate mat4;
 extern crate gl_context;
@@ -11,7 +12,8 @@ use std::f32::consts::PI;
 use gl::types::*;
 use glutin::Window;
 use gl_context::{Context, Depth, TextureKind, TextureFormat, TextureWrap, FilterMode};
-use pseudo_random::{Rng, Prng};
+use pseudo_random::Prng;
+use rng::Rng;
 
 
 static TO_RADS: f32 = PI / 180f32;
