@@ -3,9 +3,16 @@ name = "complex"
 version = "0.1.0"
 authors = ["nathanfaucett <nathanfaucett@gmail.com>"]
 
+[package.metadata.android]
+label = "complex"
+
+[[bin]]
+name = "complex"
+path = "src/main.rs"
+
 [dependencies]
 gl = "0.6.1"
-glutin = "0.6.1"
+glutin = "0.7.0"
 time = "0.1.35"
 
 [dependencies.gl_context]

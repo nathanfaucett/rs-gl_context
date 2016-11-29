@@ -40,8 +40,8 @@ fn main() {
     unsafe {
         match window.make_current() {
             Ok(_) => {
-                gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-            },
+                gl::load_with(|s| window.get_proc_address(s) as *const _);
+            }
             Err(e) => panic!("{:?}", e),
         }
     }

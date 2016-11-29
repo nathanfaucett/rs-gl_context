@@ -45,6 +45,8 @@ impl Program {
 
     pub fn get_id(&self) -> GLuint { self.id }
 
+    pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(name)}
+
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
             Some(ref mut uniform) => uniform.set(context, value, force),
@@ -57,6 +59,9 @@ impl Program {
             None => panic!("No uniform named {:?} found", name),
         }
     }
+
+    pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(name)}
+
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(name) {
             Some(ref attribute) => attribute.set(context, buffer, offset, force),
@@ -199,9 +204,9 @@ pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
 
     unsafe {
         let ptr: *const u8 = source.as_bytes().as_ptr();
-        let ptr_i8: *const i8 = mem::transmute(ptr);
+        let ptr_u8: *const u8 = mem::transmute(ptr);
         let len = source.len() as GLint;
-        gl::ShaderSource(shader, 1, &ptr_i8, &len);
+        gl::ShaderSource(shader, 1, mem::transmute(&ptr_u8), &len);
         gl::CompileShader(shader);
     }
 
