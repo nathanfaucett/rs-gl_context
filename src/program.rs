@@ -46,6 +46,8 @@ impl Program {
     pub fn get_id(&self) -> GLuint { self.id }
 
     pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(name)}
+    pub fn get_uniforms(&self) -> &BTreeMap<String, Box<Uniform>> {&self.uniforms}
+    pub fn get_uniforms_mut(&mut self) -> &mut BTreeMap<String, Box<Uniform>> {&mut self.uniforms}
 
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
@@ -61,6 +63,8 @@ impl Program {
     }
 
     pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(name)}
+    pub fn get_attributes(&self) -> &BTreeMap<String, Box<Attribute>> {&self.attributes}
+    pub fn get_attributes_mut(&mut self) -> &mut BTreeMap<String, Box<Attribute>> {&mut self.attributes}
 
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(name) {
