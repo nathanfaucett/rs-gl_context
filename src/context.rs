@@ -15,7 +15,6 @@ use vertex_array::VertexArray;
 use framebuffer::Framebuffer;
 use renderbuffer::Renderbuffer;
 
-
 static HIGHP: &'static str = "highp";
 static MEDIUMP: &'static str = "mediump";
 static LOWP: &'static str = "lowp";
@@ -62,6 +61,8 @@ pub struct Context {
     cull_face_disabled: bool,
     depth_test_disabled: bool,
     depth_write: bool,
+    depth_range_near: f64,
+    depth_range_far: f64,
     line_width: f32,
 
     current_array_buffer: GLuint,
@@ -122,6 +123,8 @@ impl Context {
             cull_face_disabled: true,
             depth_test_disabled: true,
             depth_write: true,
+            depth_range_near: 0f64,
+            depth_range_far: 1f64,
             line_width: 1f32,
 
             current_array_buffer: 0,
@@ -204,6 +207,8 @@ impl Context {
         self.cull_face_disabled = true;
         self.depth_test_disabled = true;
         self.depth_write = true;
+        self.depth_range_near = 0f64;
+        self.depth_range_far = 1f64;
         self.line_width = 1f32;
 
         self.current_array_buffer = 0;
@@ -252,6 +257,7 @@ impl Context {
         self.set_viewport_unchecked(self.viewport_x, self.viewport_y, self.viewport_width, self.viewport_height);
 
         self.set_depth_write_unchecked(self.depth_write);
+        self.set_depth_range_unchecked(self.depth_range_near, self.depth_range_far);
         self.set_line_width_unchecked(self.line_width);
 
         let blending = self.blending;
@@ -297,6 +303,22 @@ impl Context {
         if self.depth_write != depth_write {
             self.depth_write = depth_write;
             self.set_depth_write_unchecked(depth_write);
+        }
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_depth_range_unchecked(&self, near: f64, far: f64) -> &Self {
+        if far > near {
+            unsafe { gl::DepthRange(near, far); }
+        }
+        self
+    }
+    pub fn set_depth_range(&mut self, near: f64, far: f64) -> &mut Self {
+        if near != near && far != far {
+            self.depth_range_near = near;
+            self.depth_range_far = far;
+            self.set_depth_range_unchecked(near, far);
         }
         self
     }
