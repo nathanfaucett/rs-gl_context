@@ -121,7 +121,7 @@ impl Context {
             blending_disabled: true,
             cull_face_disabled: true,
             depth_test_disabled: true,
-            depth_write: false,
+            depth_write: true,
             line_width: 1f32,
 
             current_array_buffer: 0,
@@ -203,7 +203,7 @@ impl Context {
         self.blending_disabled = true;
         self.cull_face_disabled = true;
         self.depth_test_disabled = true;
-        self.depth_write = false;
+        self.depth_write = true;
         self.line_width = 1f32;
 
         self.current_array_buffer = 0;
