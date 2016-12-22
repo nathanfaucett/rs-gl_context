@@ -15,3 +15,7 @@ exclude = ["examples"]
 [dependencies]
 gl = "0.6.1"
 regex = "0.1.75"
+
+hash_map = {git = "https://github.com/nathanfaucett/rs-hash_map.git"}
+insert = {git = "https://github.com/nathanfaucett/rs-insert.git"}
+map = {git = "https://github.com/nathanfaucett/rs-map.git"}

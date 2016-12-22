@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 use collections::vec::Vec;
 use collections::str;
 use collections::string::String;
-use collections::btree_map::BTreeMap;
 
 use core::ptr;
 use core::mem;
@@ -11,6 +10,10 @@ use core::any::Any;
 
 use gl;
 use gl::types::*;
+
+use hash_map::HashMap;
+use insert::Insert;
+use map::Map;
 
 use uniform::{new_uniform, Uniform};
 use attribute::{new_attribute, Attribute};
@@ -21,8 +24,8 @@ use context::Context;
 #[derive(Debug)]
 pub struct Program {
     id: GLuint,
-    uniforms: BTreeMap<String, Box<Uniform>>,
-    attributes: BTreeMap<String, Box<Attribute>>,
+    uniforms: HashMap<String, Box<Uniform>>,
+    attributes: HashMap<String, Box<Attribute>>,
 }
 
 impl Drop for Program {
@@ -38,16 +41,16 @@ impl Program {
     pub fn new() -> Self {
         Program {
             id: 0,
-            uniforms: BTreeMap::new(),
-            attributes: BTreeMap::new(),
+            uniforms: HashMap::new(),
+            attributes: HashMap::new(),
         }
     }
 
     pub fn get_id(&self) -> GLuint { self.id }
 
-    pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(name)}
-    pub fn get_uniforms(&self) -> &BTreeMap<String, Box<Uniform>> {&self.uniforms}
-    pub fn get_uniforms_mut(&mut self) -> &mut BTreeMap<String, Box<Uniform>> {&mut self.uniforms}
+    pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(&String::from(name))}
+    pub fn get_uniforms(&self) -> &HashMap<String, Box<Uniform>> {&self.uniforms}
+    pub fn get_uniforms_mut(&mut self) -> &mut HashMap<String, Box<Uniform>> {&mut self.uniforms}
 
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
@@ -62,9 +65,9 @@ impl Program {
         }
     }
 
-    pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(name)}
-    pub fn get_attributes(&self) -> &BTreeMap<String, Box<Attribute>> {&self.attributes}
-    pub fn get_attributes_mut(&mut self) -> &mut BTreeMap<String, Box<Attribute>> {&mut self.attributes}
+    pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(&String::from(name))}
+    pub fn get_attributes(&self) -> &HashMap<String, Box<Attribute>> {&self.attributes}
+    pub fn get_attributes_mut(&mut self) -> &mut HashMap<String, Box<Attribute>> {&mut self.attributes}
 
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(name) {
@@ -100,7 +103,7 @@ impl Program {
     }
 }
 
-fn parse_uniforms(program: GLuint, uniforms: &mut BTreeMap<String, Box<Uniform>>) {
+fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>) {
     let mut max_length = 0;
     let mut active_length = 0;
 
@@ -139,7 +142,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut BTreeMap<String, Box<Uniform>>
     }
 }
 
-fn parse_attributes(program: GLuint, attributes: &mut BTreeMap<String, Box<Attribute>>) {
+fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attribute>>) {
     let mut max_length = 0;
     let mut active_length = 0;
 

@@ -6,6 +6,10 @@
 extern crate alloc;
 extern crate collections;
 
+extern crate hash_map;
+extern crate insert;
+extern crate map;
+
 extern crate regex;
 extern crate gl;
 
