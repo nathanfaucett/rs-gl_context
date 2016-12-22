@@ -12,7 +12,7 @@ path = "src/main.rs"
 
 
 [dependencies]
-gl = "0.6.1"
-glutin = "0.7.0"
+gl = "*"
+glutin = "*"
 
 gl_context = {path = "../.."}

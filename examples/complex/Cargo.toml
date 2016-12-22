@@ -11,8 +11,8 @@ name = "complex"
 path = "src/main.rs"
 
 [dependencies]
-gl = "0.6.1"
-glutin = "0.7.0"
+gl = "*"
+glutin = "*"
 time = "0.1.35"
 
 gl_context = {path = "../.."}

@@ -13,7 +13,7 @@ homepage = "https://github.com/nathanfaucett/rs-gl_context"
 exclude = ["examples"]
 
 [dependencies]
-gl = "0.6.1"
+gl = "*"
 regex = "0.1.75"
 
 hash_map = {git = "https://github.com/nathanfaucett/rs-hash_map.git"}
