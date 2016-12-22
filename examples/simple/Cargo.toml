@@ -14,5 +14,4 @@ path = "src/main.rs"
 gl = "0.6.1"
 glutin = "0.7.0"
 
-[dependencies.gl_context]
-path = "../.."
+gl_context = {path = "../.."}

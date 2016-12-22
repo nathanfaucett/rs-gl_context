@@ -60,6 +60,10 @@ pub struct Context {
     blending_disabled: bool,
     cull_face_disabled: bool,
     depth_test_disabled: bool,
+
+    clear_depth: f64,
+    clear_stencil: isize,
+
     depth_write: bool,
     depth_range_near: f64,
     depth_range_far: f64,
@@ -122,6 +126,10 @@ impl Context {
             blending_disabled: true,
             cull_face_disabled: true,
             depth_test_disabled: true,
+
+            clear_depth: 1f64,
+            clear_stencil: 0isize,
+
             depth_write: true,
             depth_range_near: 0f64,
             depth_range_far: 1f64,
@@ -206,6 +214,10 @@ impl Context {
         self.blending_disabled = true;
         self.cull_face_disabled = true;
         self.depth_test_disabled = true;
+
+        self.clear_depth = 1f64;
+        self.clear_stencil = 0isize;
+
         self.depth_write = true;
         self.depth_range_near = 0f64;
         self.depth_range_far = 1f64;
@@ -256,6 +268,9 @@ impl Context {
 
         self.set_viewport_unchecked(self.viewport_x, self.viewport_y, self.viewport_width, self.viewport_height);
 
+        self.set_clear_depth_unchecked(self.clear_depth);
+        self.set_clear_stencil_unchecked(self.clear_stencil);
+
         self.set_depth_write_unchecked(self.depth_write);
         self.set_depth_range_unchecked(self.depth_range_near, self.depth_range_far);
         self.set_line_width_unchecked(self.line_width);
@@ -295,6 +310,32 @@ impl Context {
     }
 
     #[inline(always)]
+    pub fn set_clear_depth_unchecked(&self, clear_depth: f64) -> &Self {
+        unsafe { gl::ClearDepth(clear_depth); }
+        self
+    }
+    pub fn set_clear_depth(&mut self, clear_depth: f64) -> &mut Self {
+        if self.clear_depth != clear_depth {
+            self.clear_depth = clear_depth;
+            self.set_clear_depth_unchecked(clear_depth);
+        }
+        self
+    }
+
+    #[inline(always)]
+    pub fn set_clear_stencil_unchecked(&self, clear_stencil: isize) -> &Self {
+        unsafe { gl::ClearStencil(clear_stencil as GLint); }
+        self
+    }
+    pub fn set_clear_stencil(&mut self, clear_stencil: isize) -> &mut Self {
+        if self.clear_stencil != clear_stencil {
+            self.clear_stencil = clear_stencil;
+            self.set_clear_stencil_unchecked(clear_stencil);
+        }
+        self
+    }
+
+    #[inline(always)]
     pub fn set_depth_write_unchecked(&self, depth_write: bool) -> &Self {
         unsafe { gl::DepthMask(if depth_write {gl::TRUE} else {gl::FALSE}); }
         self
@@ -309,9 +350,7 @@ impl Context {
 
     #[inline(always)]
     pub fn set_depth_range_unchecked(&self, near: f64, far: f64) -> &Self {
-        if far > near {
-            unsafe { gl::DepthRange(near, far); }
-        }
+        unsafe { gl::DepthRange(near, far); }
         self
     }
     pub fn set_depth_range(&mut self, near: f64, far: f64) -> &mut Self {
