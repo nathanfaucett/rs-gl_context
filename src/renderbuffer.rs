@@ -1,11 +1,11 @@
-use core::mem;
-use core::ops::Drop;
+use std::mem;
+use std::ops::Drop;
 
 use gl;
 use gl::types::*;
 
 use context::Context;
-use enums::{get_kind, TextureKind};
+use enums::{gl_kind, TextureKind};
 
 
 #[derive(Debug)]
@@ -31,10 +31,10 @@ impl Renderbuffer {
             },
         }
     }
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
     pub fn set(&self, _: &Context, kind: TextureKind, width: usize, height: usize) {
-        let kind = get_kind(kind);
+        let kind = gl_kind(kind);
 
         unsafe {
             gl::BindRenderbuffer(gl::RENDERBUFFER, self.id);

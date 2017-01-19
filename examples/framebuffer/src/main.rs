@@ -86,7 +86,7 @@ fn main() {
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
-        context.get_major(), context.get_minor(), context.get_glsl_major(), context.get_glsl_minor()
+        context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
     );
 
 

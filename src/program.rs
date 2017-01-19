@@ -1,19 +1,12 @@
-use alloc::boxed::Box;
-use collections::vec::Vec;
-use collections::str;
-use collections::string::String;
-
-use core::ptr;
-use core::mem;
-use core::ops::Drop;
-use core::any::Any;
+use std::str;
+use std::ptr;
+use std::mem;
+use std::ops::Drop;
+use std::any::Any;
+use std::collections::HashMap;
 
 use gl;
 use gl::types::*;
-
-use hash_map::HashMap;
-use insert::Insert;
-use map::Map;
 
 use uniform::{new_uniform, Uniform};
 use attribute::{new_attribute, Attribute};
@@ -46,11 +39,11 @@ impl Program {
         }
     }
 
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
     pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(&String::from(name))}
-    pub fn get_uniforms(&self) -> &HashMap<String, Box<Uniform>> {&self.uniforms}
-    pub fn get_uniforms_mut(&mut self) -> &mut HashMap<String, Box<Uniform>> {&mut self.uniforms}
+    pub fn uniforms(&self) -> &HashMap<String, Box<Uniform>> {&self.uniforms}
+    pub fn uniforms_mut(&mut self) -> &mut HashMap<String, Box<Uniform>> {&mut self.uniforms}
 
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
@@ -66,8 +59,8 @@ impl Program {
     }
 
     pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(&String::from(name))}
-    pub fn get_attributes(&self) -> &HashMap<String, Box<Attribute>> {&self.attributes}
-    pub fn get_attributes_mut(&mut self) -> &mut HashMap<String, Box<Attribute>> {&mut self.attributes}
+    pub fn attributes(&self) -> &HashMap<String, Box<Attribute>> {&self.attributes}
+    pub fn attributes_mut(&mut self) -> &mut HashMap<String, Box<Attribute>> {&mut self.attributes}
 
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(name) {

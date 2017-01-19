@@ -60,7 +60,7 @@ pub enum TextureWrap {
 }
 
 
-pub fn get_format(format: TextureFormat) -> GLenum {
+pub fn gl_format(format: TextureFormat) -> GLenum {
     match format {
         TextureFormat::RGB => gl::RGB,
         TextureFormat::RGBA => gl::RGBA,
@@ -70,7 +70,7 @@ pub fn get_format(format: TextureFormat) -> GLenum {
     }
 }
 
-pub fn get_kind(kind: TextureKind) -> GLenum {
+pub fn gl_kind(kind: TextureKind) -> GLenum {
     match kind {
         TextureKind::UnsignedByte => gl::UNSIGNED_BYTE,
         TextureKind::Float => gl::FLOAT,
@@ -82,7 +82,7 @@ pub fn get_kind(kind: TextureKind) -> GLenum {
     }
 }
 
-pub fn get_wrap(wrap: TextureWrap) -> GLenum {
+pub fn gl_wrap(wrap: TextureWrap) -> GLenum {
     match wrap {
         TextureWrap::Repeat => gl::REPEAT,
         TextureWrap::Clamp => gl::CLAMP_TO_EDGE,

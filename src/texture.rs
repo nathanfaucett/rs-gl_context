@@ -1,12 +1,12 @@
-use core::ptr;
-use core::mem;
-use core::ops::Drop;
+use std::ptr;
+use std::mem;
+use std::ops::Drop;
 
 use gl;
 use gl::types::*;
 
 use context::Context;
-use enums::{get_format, get_kind, get_wrap, TextureFormat, TextureWrap, TextureKind, FilterMode};
+use enums::{gl_format, gl_kind, gl_wrap, TextureFormat, TextureWrap, TextureKind, FilterMode};
 
 
 #[derive(Debug)]
@@ -46,8 +46,8 @@ macro_rules! texture_options {
     ) => (
         let $gl_pot = is_pot($width as usize) && is_pot($height as usize);
 
-        let $gl_major = $context.get_major();
-        let $gl_minor = $context.get_minor();
+        let $gl_major = $context.major();
+        let $gl_minor = $context.minor();
 
         let $gl_mag_filter;
         let $gl_min_filter;
@@ -60,9 +60,9 @@ macro_rules! texture_options {
             $gl_min_filter = if $gl_pot && $generate_mipmap {gl::LINEAR_MIPMAP_LINEAR} else {gl::LINEAR};
         }
 
-        let $gl_format = get_format($format) ;
-        let $gl_wrap = get_wrap($wrap) as GLint;
-        let $gl_kind = get_kind($kind);
+        let $gl_format = gl_format($format) ;
+        let $gl_wrap = gl_wrap($wrap) as GLint;
+        let $gl_kind = gl_kind($kind);
     )
 }
 
@@ -98,9 +98,9 @@ impl Texture {
         }
     }
 
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
-    pub fn get_kind(&self) -> GLenum { self.kind }
+    pub fn kind(&self) -> GLenum { self.kind }
 
     pub fn set_data2d<T>(
         &mut self,

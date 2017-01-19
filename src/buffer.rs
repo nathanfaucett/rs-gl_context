@@ -1,5 +1,5 @@
-use core::mem;
-use core::ops::Drop;
+use std::mem;
+use std::ops::Drop;
 
 use gl;
 use gl::types::*;
@@ -46,15 +46,15 @@ impl Buffer {
         }
     }
 
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
-    pub fn get_stride(&self) -> usize { self.stride }
-    pub fn get_kind(&self) -> GLenum { self.kind }
-    pub fn get_draw(&self) -> GLenum { self.draw }
+    pub fn stride(&self) -> usize { self.stride }
+    pub fn kind(&self) -> GLenum { self.kind }
+    pub fn draw(&self) -> GLenum { self.draw }
 
-    pub fn get_size(&self) -> usize { self.size }
-    pub fn get_kind_size(&self) -> usize { self.kind_size }
-    pub fn get_length(&self) -> usize { self.length }
+    pub fn size(&self) -> usize { self.size }
+    pub fn kind_size(&self) -> usize { self.kind_size }
+    pub fn length(&self) -> usize { self.length }
 
     pub fn set<T>(&mut self, kind: GLenum, array: &[T], stride: usize, draw: GLenum) -> &mut Self {
         let length = array.len();

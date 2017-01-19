@@ -1,7 +1,4 @@
-use collections::vec::Vec;
-use collections::string::String;
-
-use core::mem;
+use std::mem;
 
 use gl;
 use gl::types::*;
@@ -151,26 +148,26 @@ impl Context {
         }
     }
 
-    pub fn get_version(&self) -> String { self.version.clone() }
+    pub fn version(&self) -> String { self.version.clone() }
 
-    pub fn get_major(&self) -> usize { self.major }
-    pub fn get_minor(&self) -> usize { self.minor }
-    pub fn get_glsl_major(&self) -> usize { self.glsl_major }
-    pub fn get_glsl_minor(&self) -> usize { self.glsl_minor }
+    pub fn major(&self) -> usize { self.major }
+    pub fn minor(&self) -> usize { self.minor }
+    pub fn glsl_major(&self) -> usize { self.glsl_major }
+    pub fn glsl_minor(&self) -> usize { self.glsl_minor }
 
-    pub fn get_max_anisotropy(&self) -> usize { self.max_anisotropy }
-    pub fn get_max_textures(&self) -> usize { self.max_textures }
-    pub fn get_max_vertex_textures(&self) -> usize { self.max_vertex_textures }
-    pub fn get_max_texture_size(&self) -> usize { self.max_texture_size }
-    pub fn get_get_max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
-    pub fn get_max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
+    pub fn max_anisotropy(&self) -> usize { self.max_anisotropy }
+    pub fn max_textures(&self) -> usize { self.max_textures }
+    pub fn max_vertex_textures(&self) -> usize { self.max_vertex_textures }
+    pub fn max_texture_size(&self) -> usize { self.max_texture_size }
+    pub fn max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
+    pub fn max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
 
-    pub fn get_max_uniforms(&self) -> usize { self.max_uniforms }
-    pub fn get_max_varyings(&self) -> usize { self.max_varyings }
-    pub fn get_max_attributes(&self) -> usize { self.max_attributes }
+    pub fn max_uniforms(&self) -> usize { self.max_uniforms }
+    pub fn max_varyings(&self) -> usize { self.max_varyings }
+    pub fn max_attributes(&self) -> usize { self.max_attributes }
 
-    pub fn get_precision(&self) -> &'static str { self.precision }
-    pub fn get_force(&self) -> bool { self.program_force }
+    pub fn precision(&self) -> &'static str { self.precision }
+    pub fn force(&self) -> bool { self.program_force }
 
     pub fn init(&mut self) -> &mut Self {
         self.reset()
@@ -237,7 +234,7 @@ impl Context {
         self.current_texture_index = -1;
         self.current_texture = 0;
 
-        self.get_gl_info();
+        self.gl_info();
         self.gl_reset();
 
         self
@@ -597,7 +594,7 @@ impl Context {
     }
 
     pub fn set_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        match buffer.get_kind() {
+        match buffer.kind() {
             gl::ARRAY_BUFFER => self.set_array_buffer(buffer, force),
             gl::ELEMENT_ARRAY_BUFFER => self.set_element_array_buffer(buffer, force),
             _ => false,
@@ -620,7 +617,7 @@ impl Context {
 
     #[inline(always)]
     fn set_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.get_id();
+        let id = buffer.id();
 
         if force || self.current_array_buffer != id {
             self.disable_attributes();
@@ -633,7 +630,7 @@ impl Context {
     }
     #[inline(always)]
     fn set_element_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.get_id();
+        let id = buffer.id();
 
         if force || self.current_element_array_buffer != id {
             self.disable_attributes();
@@ -666,7 +663,7 @@ impl Context {
     }
 
     pub fn set_vertex_array(&mut self, vertex_array: &VertexArray, force: bool) -> bool {
-        let id = vertex_array.get_id();
+        let id = vertex_array.id();
 
         if force || self.current_vertex_array != id {
             unsafe { gl::BindVertexArray(id); }
@@ -687,7 +684,7 @@ impl Context {
     }
 
     pub fn set_framebuffer(&mut self, framebuffer: &Framebuffer, force: bool) -> bool {
-        let id = framebuffer.get_id();
+        let id = framebuffer.id();
 
         if force || self.current_framebuffer != id {
             unsafe { gl::BindFramebuffer(gl::FRAMEBUFFER, id); }
@@ -710,7 +707,7 @@ impl Context {
     }
 
     pub fn set_renderbuffer(&mut self, renderbuffer: &Renderbuffer, force: bool) -> bool {
-        let id = renderbuffer.get_id();
+        let id = renderbuffer.id();
 
         if force || self.current_renderbuffer != id {
             unsafe { gl::BindRenderbuffer(gl::RENDERBUFFER, id); }
@@ -731,7 +728,7 @@ impl Context {
     }
 
     pub fn set_texture(&mut self, location: GLint, texture: &Texture, force: bool) -> bool {
-        let id = texture.get_id();
+        let id = texture.id();
         let index = self.texture_index;
         let current_texture_index = self.current_texture_index;
 
@@ -766,7 +763,7 @@ impl Context {
     }
 
     pub fn set_program(&mut self, program: &Program, force: bool) -> bool {
-        let id = program.get_id();
+        let id = program.id();
 
         if force || self.program != id {
             self.program = id;
@@ -830,11 +827,11 @@ impl Context {
         }
     }
 
-    pub fn get_error(&self) -> GLenum {
+    pub fn error(&self) -> GLenum {
         unsafe { gl::GetError() }
     }
 
-    fn get_gl_info(&mut self) {
+    fn gl_info(&mut self) {
         let mut vs_high_float_precision: GLint = 0;
         let mut vs_high_float_range: GLint = 0;
         unsafe {
@@ -907,7 +904,7 @@ impl Context {
                 self.minor = minor as usize;
             }
 
-            get_glsl_version(self.major, self.minor, &mut self.glsl_major, &mut self.glsl_minor);
+            glsl_version(self.major, self.minor, &mut self.glsl_major, &mut self.glsl_minor);
             parse_extenstions(&mut self.extenstions, self.major);
         }
 
@@ -990,7 +987,7 @@ unsafe fn parse_extenstions(extenstions: &mut Vec<String>, major_version: usize)
     }
 }
 
-fn get_glsl_version(major: usize, minor: usize, glsl_major: &mut usize, glsl_minor: &mut usize) {
+fn glsl_version(major: usize, minor: usize, glsl_major: &mut usize, glsl_minor: &mut usize) {
     if major <= 3 && minor <= 2 {
         *glsl_major = 1;
         *glsl_minor = if major == 3 && minor == 2 {

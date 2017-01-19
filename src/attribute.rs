@@ -1,7 +1,4 @@
-use alloc::boxed::Box;
-use collections::string::String;
-
-use core::fmt::Debug;
+use std::fmt::Debug;
 
 use gl;
 use gl::types::*;
@@ -11,10 +8,10 @@ use buffer::Buffer;
 
 
 pub trait Attribute: Debug {
-    fn get_name(&self) -> String;
-    fn get_kind(&self) -> GLenum;
-    fn get_size(&self) -> usize;
-    fn get_location(&self) -> GLint;
+    fn name(&self) -> String;
+    fn kind(&self) -> GLenum;
+    fn size(&self) -> usize;
+    fn location(&self) -> GLint;
     fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool;
 }
 
@@ -39,19 +36,19 @@ macro_rules! create_attribute_struct {
             }
         }
         impl Attribute for $t {
-            fn get_name(&self) -> String { self.name.clone() }
-            fn get_kind(&self) -> GLenum { self.kind }
-            fn get_size(&self) -> usize { self.size }
-            fn get_location(&self) -> GLint { self.location }
+            fn name(&self) -> String { self.name.clone() }
+            fn kind(&self) -> GLenum { self.kind }
+            fn size(&self) -> usize { self.size }
+            fn location(&self) -> GLint { self.location }
             fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
-                let kind_size = buffer.get_kind_size();
+                let kind_size = buffer.kind_size();
 
                 context.set_buffer(buffer, force);
                 context.set_attrib_pointer(
-                    self.get_location() as GLuint,
+                    self.location() as GLuint,
                     $size,
                     $kind,
-                    (buffer.get_stride() * kind_size) as GLint,
+                    (buffer.stride() * kind_size) as GLint,
                     (offset * kind_size) as GLint,
                     force
                 )

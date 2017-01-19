@@ -1,5 +1,5 @@
-use core::mem;
-use core::ops::Drop;
+use std::mem;
+use std::ops::Drop;
 
 use gl;
 use gl::types::*;
@@ -28,5 +28,5 @@ impl VertexArray {
             },
         }
     }
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 }

@@ -1,5 +1,5 @@
-use core::mem;
-use core::ops::Drop;
+use std::mem;
+use std::ops::Drop;
 
 use gl;
 use gl::types::*;
@@ -31,14 +31,14 @@ impl Framebuffer {
             },
         }
     }
-    pub fn get_id(&self) -> GLuint { self.id }
+    pub fn id(&self) -> GLuint { self.id }
 
     pub fn set(&mut self, _: &Context, texture: &Texture, buffers: &[GLenum], level: GLint) {
-        let texture_id = texture.get_id();
+        let texture_id = texture.id();
 
         unsafe {
             gl::BindFramebuffer(gl::FRAMEBUFFER, self.id);
-            gl::BindTexture(texture.get_kind(), texture_id);
+            gl::BindTexture(texture.kind(), texture_id);
 
             for i in 0..buffers.len() {
                 gl::FramebufferTexture(gl::FRAMEBUFFER, buffers[i], texture_id, level);
