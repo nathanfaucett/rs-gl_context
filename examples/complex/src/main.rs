@@ -10,8 +10,7 @@ extern crate gl;
 use std::f32::consts::PI;
 
 use gl::types::*;
-use glutin::Window;
-use gl_context::{Context, Depth, TextureKind, TextureFormat, TextureWrap, FilterMode};
+use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
 use pseudo_random::Prng;
 use rng::Rng;
 
@@ -65,7 +64,10 @@ static DATA: [GLfloat; 16] = [
 ];
 
 fn main() {
-    let window = Window::new().unwrap();
+    let window = glutin::WindowBuilder::new()
+        .with_depth_buffer(24)
+        .build()
+        .unwrap();
 
     let mut random = Prng::new();
 
@@ -81,7 +83,6 @@ fn main() {
     let mut context = Context::new();
 
     context.init();
-    context.set_depth_func(Depth::Always);
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",

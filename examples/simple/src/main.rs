@@ -4,7 +4,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::{Context, Depth};
+use gl_context::Context;
 
 
 static VERTEX_DATA: [GLfloat; 6] = [
@@ -34,7 +34,10 @@ static FS_SRC: &'static str = "
 ";
 
 fn main() {
-    let window = glutin::Window::new().unwrap();
+    let window = glutin::WindowBuilder::new()
+        .with_depth_buffer(24)
+        .build()
+        .unwrap();
     let mut context = Context::new();
 
     unsafe {
@@ -47,7 +50,6 @@ fn main() {
     }
 
     context.init();
-    context.set_depth_func(Depth::Always);
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",

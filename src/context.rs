@@ -520,11 +520,11 @@ impl Context {
     }
 
     #[inline(always)]
-    pub fn set_clear_color_unchecked<'a>(&self, color: &'a [f32; 4]) -> &Self {
+    pub fn set_clear_color_unchecked(&self, color: &[f32; 4]) -> &Self {
         unsafe { gl::ClearColor(color[0], color[1], color[2], color[3]); }
         self
     }
-    pub fn set_clear_color<'a>(&mut self, color: &'a [f32; 4]) -> &mut Self {
+    pub fn set_clear_color(&mut self, color: &[f32; 4]) -> &mut Self {
         if &self.clear_color != color {
             self.clear_color[0] = color[0];
             self.clear_color[1] = color[1];

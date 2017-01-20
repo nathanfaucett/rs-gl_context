@@ -4,7 +4,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::{Context, Depth, TextureKind, TextureFormat, TextureWrap, FilterMode};
+use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
 
 
 static FB_VS:  &'static str = "
@@ -69,7 +69,10 @@ static TR_VERTEX_DATA: [GLfloat; 6] = [
 
 
 fn main() {
-    let window = glutin::Window::new().unwrap();
+    let window = glutin::WindowBuilder::new()
+        .with_depth_buffer(24)
+        .build()
+        .unwrap();
     let mut context = Context::new();
 
     unsafe {
@@ -82,7 +85,6 @@ fn main() {
     }
 
     context.init();
-    context.set_depth_func(Depth::Always);
 
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
