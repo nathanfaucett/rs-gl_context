@@ -75,6 +75,12 @@ impl Program {
         let id = link_program(vs, fs);
         self.set_program_id(id)
     }
+    pub fn set_mutiple(&mut self, vertex: &[&str], fragment: &[&str]) -> &mut Self {
+        let vs = compile_shaders(vertex, gl::VERTEX_SHADER);
+        let fs = compile_shaders(fragment, gl::FRAGMENT_SHADER);
+        let id = link_program(vs, fs);
+        self.set_program_id(id)
+    }
 
     pub fn set_program_id(&mut self, id: GLuint) -> &mut Self {
         {
@@ -182,7 +188,9 @@ pub fn link_program(vertex_shader: GLuint, fragment_shader: GLuint) -> GLuint {
         gl::ValidateProgram(program);
         gl::UseProgram(program);
     }
-
+    check_program_status(program)
+}
+pub fn check_program_status(program: GLuint) -> GLuint {
     let mut status = 0;
     unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut status) };
     if status != (gl::TRUE as GLint) {
@@ -195,7 +203,6 @@ pub fn link_program(vertex_shader: GLuint, fragment_shader: GLuint) -> GLuint {
         }
         panic!("{}", str::from_utf8(&buf).ok().expect("ProgramInfoLog not valid utf8"));
     }
-
     program
 }
 
@@ -209,7 +216,23 @@ pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
         gl::ShaderSource(shader, 1, mem::transmute(&ptr_u8), &len);
         gl::CompileShader(shader);
     }
+    check_shader_status(shader)
+}
+pub fn compile_shaders(sources: &[&str], kind: GLenum) -> GLuint {
+    let shader = unsafe { gl::CreateShader(kind) };
 
+    unsafe {
+        for source in sources.iter() {
+            let ptr: *const u8 = source.as_bytes().as_ptr();
+            let ptr_u8: *const u8 = mem::transmute(ptr);
+            let len = source.len() as GLint;
+            gl::ShaderSource(shader, 1, mem::transmute(&ptr_u8), &len);
+            gl::CompileShader(shader);
+        }
+    }
+    check_shader_status(shader)
+}
+pub fn check_shader_status(shader: GLuint) -> GLuint {
     let mut status = 0;
     unsafe { gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status) };
     if status != (gl::TRUE as GLint) {
@@ -222,6 +245,5 @@ pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
         }
         panic!("{}", str::from_utf8(&buf).ok().expect("ShaderInfoLog not valid utf8"));
     }
-
     shader
 }
