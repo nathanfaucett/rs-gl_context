@@ -14,4 +14,4 @@ exclude = ["examples"]
 
 [dependencies]
 gl = "*"
-regex = "0.1.75"
+regex = "0.1"

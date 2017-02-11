@@ -918,15 +918,28 @@ impl Context {
             let ptr = gl::GetString(gl::VERSION);
             string_from_ptr(ptr, &mut self.version);
 
-            let cap = Regex::new(r"(\d+).(\d+).(\d+)").unwrap().captures(self.version.as_str()).unwrap();
-            let mut major = cap.at(1).unwrap_or("3").parse::<i32>().unwrap();
-            let mut minor = cap.at(2).unwrap_or("1").parse::<i32>().unwrap();
+            let (mut major, mut minor) =
+                if cfg!(target_arch = "asmjs") || cfg!(target_arch = "wasm32") {
+                    (2, 0)
+                } else {
+                    let re = Regex::new(r"(\d+).(\d+).(\d+)").expect("regex failed to compile");
+                    match re.captures(&self.version) {
+                         Some(cap) => (
+                            cap.at(1).unwrap_or("3").parse::<i32>().unwrap(),
+                            cap.at(2).unwrap_or("1").parse::<i32>().unwrap()
+                        ),
+                        None => (3, 1),
+                    }
+                };
 
             if major > 2 {
                 gl::GetIntegerv(gl::MAJOR_VERSION, &mut major);
                 self.major = major as usize;
                 gl::GetIntegerv(gl::MINOR_VERSION, &mut minor);
                 self.minor = minor as usize;
+            } else {
+                self.major = 2;
+                self.minor = 0;
             }
 
             glsl_version(self.major, self.minor, &mut self.glsl_major, &mut self.glsl_minor);
@@ -980,12 +993,13 @@ impl Context {
 }
 
 unsafe fn string_from_ptr(ptr: *const u8, string: &mut String) {
-    let mut i = ptr as usize;
+    let mut i = 0isize;
     loop {
-        let ch = *(i as *const u8);
-        if ch != 0 {
+        let ch = *ptr.offset(i);
+
+        if ch != 0u8 {
             string.push(ch as char);
-            i = i + 1;
+            i = i + 1isize;
         } else {
             break;
         }
