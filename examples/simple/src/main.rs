@@ -51,6 +51,7 @@ fn main() {
 
     context.init();
 
+    println!("{:?}", context.version());
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
         context.major(), context.minor(), context.glsl_major(), context.glsl_minor()

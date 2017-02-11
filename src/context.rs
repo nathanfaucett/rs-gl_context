@@ -918,18 +918,21 @@ impl Context {
             let ptr = gl::GetString(gl::VERSION);
             string_from_ptr(ptr, &mut self.version);
 
-            let (mut major, mut minor) =
-                if cfg!(target_arch = "asmjs") || cfg!(target_arch = "wasm32") {
-                    (2, 0)
-                } else {
-                    let re = Regex::new(r"(\d+).(\d+).(\d+)").expect("regex failed to compile");
-                    match re.captures(&self.version) {
-                         Some(cap) => (
-                            cap.at(1).unwrap_or("3").parse::<i32>().unwrap(),
-                            cap.at(2).unwrap_or("1").parse::<i32>().unwrap()
-                        ),
-                        None => (3, 1),
-                    }
+            let (mut major, mut minor) = match
+                Regex::new(r"(\d+).(\d+)")
+                    .expect("regex failed to compile")
+                    .captures(&self.version) {
+                     Some(cap) => (
+                        match cap.get(1) {
+                            Some(major) => major.as_str().parse::<i32>().unwrap(),
+                            None => 3,
+                        },
+                        match cap.get(2) {
+                            Some(minor) => minor.as_str().parse::<i32>().unwrap(),
+                            None => 1,
+                        }
+                    ),
+                    None => (3, 1),
                 };
 
             if major > 2 {

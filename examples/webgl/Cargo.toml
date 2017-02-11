@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 gl = "*"
 sdl2 = "*"
+time = "0.1"
 webplatform = {git = "https://github.com/tcr/rust-webplatform"}
 
 gl_context = {path = "../.."}
