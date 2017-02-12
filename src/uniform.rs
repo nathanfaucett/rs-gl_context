@@ -9,11 +9,26 @@ use texture::Texture;
 
 fn copy_array<'a, 'b, T: Copy>(a: &'a mut [T], b: &'b [T]) {
     let mut i = 0usize;
+    let il = b.len();
 
-    while i < b.len() {
+    while i < il {
         a[i] = b[i];
         i += 1;
     }
+}
+
+fn ne_array<'a, 'b, T: PartialEq>(a: &'a [T], b: &'b [T]) -> bool {
+    let mut i = 0usize;
+    let il = b.len();
+
+    while i < il {
+        if a[i] != b[i] {
+            return true;
+        } else {
+            i += 1;
+        }
+    }
+    false
 }
 
 
@@ -22,8 +37,8 @@ pub trait Uniform: Debug {
     fn kind(&self) -> GLenum;
     fn size(&self) -> usize;
     fn location(&self) -> GLint;
-    fn set_unchecked(&mut self, context: &mut Context, value: &Any, force: bool) -> bool;
-    fn set(&mut self, context: &mut Context, value: &Any, force: bool) -> bool;
+    fn set_unchecked(&mut self, &mut Context, &Any, bool) -> bool;
+    fn set(&mut self, &mut Context, &Any, bool) -> bool;
 }
 
 
@@ -110,7 +125,7 @@ macro_rules! create_simple_uniform {
                         true
                     },
                     None => panic!(
-                        "Invalid value passed to {:?} expected {:?}",
+                        "Invalid value passed to uniform {:?} expected {:?}",
                         self.name,
                         stringify!([$kind; $item_count])
                     ),
@@ -119,7 +134,7 @@ macro_rules! create_simple_uniform {
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
-                        if force || self.value != *value {
+                        if force || ne_array(&self.value, value) {
                             copy_array(&mut self.value, value);
                             unsafe { gl::$func(self.location, 1, value.as_ptr()); }
                             true
@@ -128,7 +143,7 @@ macro_rules! create_simple_uniform {
                         }
                     },
                     None => panic!(
-                        "Invalid value passed to {:?} expected {:?}",
+                        "Invalid value passed to uniform {:?} expected {:?}",
                         self.name,
                         stringify!([$kind; $item_count])
                     ),
@@ -151,7 +166,11 @@ macro_rules! create_simple_single_uniform {
                         unsafe { gl::$func(self.location, *value) };
                         true
                     },
-                    None => panic!("Invalid value passed to {:?} expected {:?}", self.name, stringify!($kind)),
+                    None => panic!(
+                        "Invalid value passed to uniform {:?} expected {:?}",
+                        self.name,
+                        stringify!($kind)
+                    ),
                 }
             }
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
@@ -165,7 +184,11 @@ macro_rules! create_simple_single_uniform {
                             false
                         }
                     },
-                    None => panic!("Invalid value passed to {:?} expected {:?}", self.name, stringify!($kind)),
+                    None => panic!(
+                        "Invalid value passed to uniform {:?} expected {:?}",
+                        self.name,
+                        stringify!($kind)
+                    ),
                 }
             }
         }
@@ -186,7 +209,7 @@ macro_rules! create_matrix_uniform {
                         true
                     },
                     None => panic!(
-                        "Invalid value passed to {:?} expected {:?}",
+                        "Invalid value passed to uniform {:?} expected {:?}",
                         self.name,
                         stringify!([$kind; $item_count])
                     ),
@@ -195,7 +218,7 @@ macro_rules! create_matrix_uniform {
             fn set(&mut self, _: &mut Context, value: &Any, force: bool) -> bool {
                 match value.downcast_ref::<[$kind; $item_count]>() {
                     Some(value) => {
-                        if force || self.value != *value {
+                        if force || ne_array(&self.value, value) {
                             copy_array(&mut self.value, value);
                             unsafe { gl::$func(self.location, 1, gl::FALSE, value.as_ptr()); }
                             true
@@ -204,7 +227,7 @@ macro_rules! create_matrix_uniform {
                         }
                     },
                     None => panic!(
-                        "Invalid value passed to {:?} expected {:?}",
+                        "Invalid value passed to uniform {:?} expected {:?}",
                         self.name,
                         stringify!([$kind; $item_count])
                     ),
@@ -253,24 +276,24 @@ macro_rules! create_size_simple_uniform {
             fn size(&self) -> usize { self.size }
             fn location(&self) -> GLint { self.location }
             fn set_unchecked(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
-                unsafe {
-                    gl::$func(
-                        self.location,
-                        self.size as GLint,
-                        (((value as *const Any) as *const $kind) as usize) as *const _
-                    );
+                match value.downcast_ref::<[$kind; $item_count]>() {
+                    Some(value) => unsafe {
+                        gl::$func(
+                            self.location,
+                            self.size as GLint,
+                            value.as_ptr()
+                        );
+                        true
+                    },
+                    None => panic!(
+                        "Invalid value passed to uniform {:?} expected {:?}",
+                        self.name,
+                        stringify!([$kind; $item_count])
+                    ),
                 }
-                true
             }
-            fn set(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
-                unsafe {
-                    gl::$func(
-                        self.location,
-                        self.size as GLint,
-                        (((value as *const Any) as *const $kind) as usize) as *const _
-                    );
-                }
-                true
+            fn set(&mut self, context: &mut Context, value: &Any, force: bool) -> bool {
+                self.set_unchecked(context, value, force)
             }
         }
     );
@@ -288,21 +311,13 @@ macro_rules! create_size_matrix_uniform {
                         self.location,
                         self.size as GLint,
                         gl::FALSE,
-                        (((value as *const Any) as *const $kind) as usize) as *const _
+                        (value as *const Any) as *const $kind
                     );
+                    true
                 }
-                true
             }
-            fn set(&mut self, _: &mut Context, value: &Any, _: bool) -> bool {
-                unsafe {
-                    gl::$func(
-                        self.location,
-                        self.size as GLint,
-                        gl::FALSE,
-                        (((value as *const Any) as *const $kind) as usize) as *const _
-                    );
-                }
-                true
+            fn set(&mut self, context: &mut Context, value: &Any, force: bool) -> bool {
+                self.set_unchecked(context, value, force)
             }
         }
     );
@@ -349,20 +364,24 @@ macro_rules! create_texture_uniform {
             fn set_unchecked(&mut self, context: &mut Context, value: &Any, force: bool) -> bool {
                 match value.downcast_ref::<Texture>() {
                     Some(texture) => {
-                        context.set_texture(self.location, texture, force);
+                        context.set_texture(self.location, texture, force)
                     },
-                    None => panic!("Invalid value passed to {:?} expected Texture", self.name),
+                    None => panic!(
+                        "Invalid value passed to uniform {:?} expected Texture",
+                        self.name
+                    ),
                 }
-                true
             }
             fn set(&mut self, context: &mut Context, value: &Any, force: bool) -> bool {
                 match value.downcast_ref::<Texture>() {
                     Some(texture) => {
-                        context.set_texture(self.location, texture, force);
+                        context.set_texture(self.location, texture, force)
                     },
-                    None => panic!("Invalid value passed to {:?} expected Texture", self.name),
+                    None => panic!(
+                        "Invalid value passed to uniform {:?} expected Texture",
+                        self.name
+                    ),
                 }
-                true
             }
         }
     );

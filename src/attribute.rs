@@ -12,7 +12,7 @@ pub trait Attribute: Debug {
     fn kind(&self) -> GLenum;
     fn size(&self) -> usize;
     fn location(&self) -> GLint;
-    fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool;
+    fn set(&self, &mut Context, &Buffer, usize, bool) -> bool;
 }
 
 
