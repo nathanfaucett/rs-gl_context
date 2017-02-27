@@ -1,0 +1,17 @@
+[package]
+name = "android"
+version = "0.1.0"
+authors = ["nathanfaucett <nathanfaucett@gmail.com>"]
+
+[package.metadata.android]
+label = "android"
+
+[[bin]]
+name = "android"
+path = "src/main.rs"
+
+[dependencies]
+gl = "*"
+glutin = "*"
+
+gl_context = {path = "../.."}

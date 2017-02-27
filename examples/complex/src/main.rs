@@ -1,4 +1,4 @@
-extern crate pseudo_random;
+extern crate prng;
 extern crate rng;
 extern crate time;
 extern crate mat4;
@@ -11,7 +11,7 @@ use std::f32::consts::PI;
 
 use gl::types::*;
 use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
-use pseudo_random::Prng;
+use prng::Prng;
 use rng::Rng;
 
 

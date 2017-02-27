@@ -18,6 +18,6 @@ time = "0.1"
 gl_context = {path = "../.."}
 
 rng = {git = "https://github.com/nathanfaucett/rs-rng.git"}
-pseudo_random = {git = "https://github.com/nathanfaucett/rs-pseudo_random.git"}
+prng = {git = "https://github.com/nathanfaucett/rs-prng.git"}
 
 mat4 = {git = "https://github.com/nathanfaucett/rs-mat4.git"}

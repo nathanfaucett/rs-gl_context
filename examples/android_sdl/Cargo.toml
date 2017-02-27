@@ -1,0 +1,18 @@
+[package]
+name = "webgl"
+version = "0.1.0"
+authors = ["nathanfaucett <nathanfaucett@gmail.com>"]
+
+[package.metadata.android]
+label = "webgl"
+
+[[bin]]
+name = "webgl"
+path = "src/main.rs"
+
+[dependencies]
+gl = "*"
+sdl2 = "*"
+time = "0.1"
+
+gl_context = {path = "../.."}
