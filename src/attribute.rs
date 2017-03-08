@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use alloc::boxed::Box;
+use collections::string::String;
+
+use core::fmt::Debug;
 
 use gl;
 use gl::types::*;

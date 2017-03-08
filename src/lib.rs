@@ -1,5 +1,17 @@
+#![feature(alloc)]
+#![feature(collections)]
+#![no_std]
+
+
+extern crate alloc;
+extern crate collections;
+
 extern crate regex;
 extern crate gl;
+
+extern crate collection_traits;
+extern crate hash_map;
+extern crate vector;
 
 
 mod attribute;

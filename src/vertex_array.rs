@@ -1,5 +1,5 @@
-use std::mem;
-use std::ops::Drop;
+use core::mem;
+use core::ops::Drop;
 
 use gl;
 use gl::types::*;

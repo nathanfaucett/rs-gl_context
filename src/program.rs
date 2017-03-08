@@ -1,9 +1,15 @@
-use std::str;
-use std::ptr;
-use std::mem;
-use std::ops::Drop;
-use std::any::Any;
-use std::collections::HashMap;
+use alloc::boxed::Box;
+use collections::string::String;
+
+use core::str::{self, Utf8Error};
+use core::ptr;
+use core::mem;
+use core::ops::Drop;
+use core::any::Any;
+
+use collection_traits::*;
+use hash_map::HashMap;
+use vector::Vector;
 
 use gl;
 use gl::types::*;
@@ -116,7 +122,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
         let mut size = 0;
         let mut kind = 0;
 
-        let mut buf = Vec::with_capacity(max_length as usize);
+        let mut buf = Vector::with_capacity(max_length as usize);
         let buf_ptr = buf.as_mut_ptr() as *mut GLchar;
         let location;
 
@@ -126,7 +132,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
             location = gl::GetUniformLocation(program, buf_ptr);
         }
 
-        let mut name = match String::from_utf8(buf) {
+        let mut name = match string_from_utf8(buf) {
             Ok(string) => string,
             Err(vec) => panic!("Could not convert uniform name from buffer: {:?}", vec)
         };
@@ -138,6 +144,13 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
         }
 
         uniforms.insert(name.clone(), new_uniform(name, kind, size as usize, location));
+    }
+}
+
+fn string_from_utf8(vec: Vector<u8>) -> Result<String, Utf8Error> {
+    match str::from_utf8(&vec) {
+        Ok(s) => Ok(String::from(s)),
+        Err(e) => Err(e),
     }
 }
 
@@ -155,7 +168,7 @@ fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attrib
         let mut size = 0;
         let mut kind = 0;
 
-        let mut buf = Vec::with_capacity(max_length as usize);
+        let mut buf = Vector::with_capacity(max_length as usize);
         let buf_ptr = buf.as_mut_ptr() as *mut GLchar;
         let location;
 
@@ -165,7 +178,7 @@ fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attrib
             location = gl::GetAttribLocation(program, buf_ptr);
         }
 
-        let name = match String::from_utf8(buf) {
+        let name = match string_from_utf8(buf) {
             Ok(string) => string,
             Err(vec) => panic!("Could not convert attribute name from buffer: {:?}", vec)
         };
@@ -196,7 +209,7 @@ pub fn check_program_status(program: GLuint) -> GLuint {
     if status != (gl::TRUE as GLint) {
         let mut len: GLint = 0;
         unsafe { gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len); }
-        let mut buf = Vec::with_capacity(len as usize);
+        let mut buf = Vector::with_capacity(len as usize);
         unsafe {
             buf.set_len(len as usize);
             gl::GetProgramInfoLog(program, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
@@ -238,7 +251,7 @@ pub fn check_shader_status(shader: GLuint) -> GLuint {
     if status != (gl::TRUE as GLint) {
         let mut len = 0;
         unsafe { gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len); }
-        let mut buf = Vec::with_capacity(len as usize);
+        let mut buf = Vector::with_capacity(len as usize);
         unsafe {
             buf.set_len(len as usize);
             gl::GetShaderInfoLog(shader, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);

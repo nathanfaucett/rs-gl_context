@@ -1,4 +1,9 @@
-use std::mem;
+use collections::string::String;
+
+use core::mem;
+
+use collection_traits::*;
+use vector::Vector;
 
 use gl;
 use gl::types::*;
@@ -26,7 +31,7 @@ pub struct Context {
     glsl_major: usize,
     glsl_minor: usize,
 
-    extenstions: Vec<String>,
+    extenstions: Vector<String>,
 
     clear_color: [f32; 4],
 
@@ -43,7 +48,7 @@ pub struct Context {
 
     precision: &'static str,
 
-    enabled_attributes: Vec<bool>,
+    enabled_attributes: Vector<bool>,
 
     viewport_x: usize,
     viewport_y: usize,
@@ -92,7 +97,7 @@ impl Context {
             glsl_major: 0,
             glsl_minor: 0,
 
-            extenstions: Vec::new(),
+            extenstions: Vector::new(),
 
             clear_color: [0f32, 0f32, 0f32, 1f32],
 
@@ -109,7 +114,7 @@ impl Context {
 
             precision: HIGHP,
 
-            enabled_attributes: Vec::new(),
+            enabled_attributes: Vector::new(),
 
             viewport_x: 0,
             viewport_y: 0,
@@ -155,7 +160,7 @@ impl Context {
     pub fn glsl_major(&self) -> usize { self.glsl_major }
     pub fn glsl_minor(&self) -> usize { self.glsl_minor }
 
-    pub fn extenstions(&self) -> &Vec<String> { &self.extenstions }
+    pub fn extenstions(&self) -> &Vector<String> { &self.extenstions }
 
     pub fn clear_color(&self) -> &[f32; 4] { &self.clear_color }
 
@@ -172,7 +177,7 @@ impl Context {
 
     pub fn precision(&self) -> &'static str { self.precision }
 
-    pub fn enabled_attributes(&self) -> &Vec<bool> { &self.enabled_attributes }
+    pub fn enabled_attributes(&self) -> &Vector<bool> { &self.enabled_attributes }
 
     pub fn viewport_x(&self) -> usize { self.viewport_x }
     pub fn viewport_y(&self) -> usize { self.viewport_y }
@@ -1009,7 +1014,7 @@ unsafe fn string_from_ptr(ptr: *const u8, string: &mut String) {
     }
 }
 
-unsafe fn parse_extenstions(extenstions: &mut Vec<String>, major_version: usize) {
+unsafe fn parse_extenstions(extenstions: &mut Vector<String>, major_version: usize) {
     if major_version > 2 {
         let mut count = 0;
         gl::GetIntegerv(gl::NUM_EXTENSIONS, &mut count);
