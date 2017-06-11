@@ -11,12 +11,12 @@ use texture::Texture;
 use enums::Attachment;
 
 
-#[derive(Debug)]
 pub struct Framebuffer {
     id: GLuint,
 }
 
 impl Drop for Framebuffer {
+    #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
             unsafe { gl::DeleteFramebuffers(1, &self.id); }
@@ -25,6 +25,7 @@ impl Drop for Framebuffer {
 }
 
 impl Framebuffer {
+    #[inline(always)]
     pub fn new() -> Self {
         Framebuffer {
             id: {
@@ -34,8 +35,10 @@ impl Framebuffer {
             },
         }
     }
+    #[inline(always)]
     pub fn id(&self) -> GLuint { self.id }
 
+    #[inline]
     pub fn set(&mut self, _: &Context, texture: &Texture, buffers: &[Attachment], level: GLint) {
         let texture_id = texture.id();
 

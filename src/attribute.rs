@@ -1,8 +1,6 @@
 use alloc::boxed::Box;
 use collections::string::String;
 
-use core::fmt::Debug;
-
 use gl;
 use gl::types::*;
 
@@ -10,7 +8,7 @@ use context::Context;
 use buffer::Buffer;
 
 
-pub trait Attribute: Debug {
+pub trait Attribute {
     fn name(&self) -> String;
     fn kind(&self) -> GLenum;
     fn size(&self) -> usize;
@@ -21,7 +19,6 @@ pub trait Attribute: Debug {
 
 macro_rules! create_attribute_struct {
     ($t: ident, $size: expr, $kind: expr) => (
-        #[derive(Debug)]
         pub struct $t {
             name: String,
             kind: GLenum,
@@ -29,6 +26,7 @@ macro_rules! create_attribute_struct {
             location: GLint,
         }
         impl $t {
+            #[inline(always)]
             pub fn new(name: String, kind: GLenum, size: usize, location: GLint) -> Self {
                 $t {
                     name: name,
@@ -39,10 +37,15 @@ macro_rules! create_attribute_struct {
             }
         }
         impl Attribute for $t {
+            #[inline(always)]
             fn name(&self) -> String { self.name.clone() }
+            #[inline(always)]
             fn kind(&self) -> GLenum { self.kind }
+            #[inline(always)]
             fn size(&self) -> usize { self.size }
+            #[inline(always)]
             fn location(&self) -> GLint { self.location }
+            #[inline]
             fn set(&self, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
                 let kind_size = buffer.kind_size();
 

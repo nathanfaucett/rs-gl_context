@@ -4,7 +4,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::Context;
+use gl_context::{Context, BufferTarget, Usage, DrawMode};
 
 
 static VERTEX_DATA: [GLfloat; 6] = [
@@ -64,7 +64,7 @@ fn main() {
     context.set_vertex_array(&vertex_array, false);
 
     let mut buffer = context.new_buffer();
-    buffer.set(gl::ARRAY_BUFFER, &VERTEX_DATA, 0, gl::STATIC_DRAW);
+    buffer.set(BufferTarget::Array, &VERTEX_DATA, 0, Usage::StaticDraw);
 
     program.set_attribute("position", &mut context, &buffer, 0, false);
 
@@ -85,7 +85,8 @@ fn main() {
         context.clear(true, true, true);
         context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
 
-        unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
+
+        context.draw_arrays(DrawMode::Triangles, 0, 3);
 
         match window.swap_buffers() {
             Ok(_) => (),

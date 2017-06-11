@@ -4,12 +4,12 @@ use gl;
 use gl::types::*;
 
 
-#[derive(Debug)]
 pub struct VertexArray {
     id: GLuint,
 }
 
 impl Drop for VertexArray {
+    #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
             unsafe { gl::DeleteVertexArrays(1, &self.id); }
@@ -18,6 +18,7 @@ impl Drop for VertexArray {
 }
 
 impl VertexArray {
+    #[inline(always)]
     pub fn new() -> Self {
         VertexArray {
             id: {
@@ -27,5 +28,6 @@ impl VertexArray {
             },
         }
     }
+    #[inline(always)]
     pub fn id(&self) -> GLuint { self.id }
 }

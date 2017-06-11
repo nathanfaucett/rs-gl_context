@@ -22,7 +22,6 @@ static MEDIUMP: &'static str = "mediump";
 static LOWP: &'static str = "lowp";
 
 
-#[derive(Debug)]
 pub struct Context {
     version: String,
 
@@ -71,9 +70,8 @@ pub struct Context {
     depth_range_far: f64,
     line_width: f32,
 
-    current_array_buffer: GLuint,
-    current_element_array_buffer: GLuint,
-
+    current_buffer: GLuint,
+    current_buffer_kind: GLenum,
     current_vertex_array: GLuint,
     current_framebuffer: GLuint,
     current_renderbuffer: GLuint,
@@ -88,6 +86,7 @@ pub struct Context {
 
 impl Context {
 
+    #[inline]
     pub fn new() -> Self {
         Context {
             version: String::new(),
@@ -137,9 +136,8 @@ impl Context {
             depth_range_far: 1f64,
             line_width: 1f32,
 
-            current_array_buffer: 0,
-            current_element_array_buffer: 0,
-
+            current_buffer: 0,
+            current_buffer_kind: 0,
             current_vertex_array: 0,
             current_framebuffer: 0,
             current_renderbuffer: 0,
@@ -153,72 +151,119 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn version(&self) -> &String { &self.version }
 
+    #[inline(always)]
     pub fn major(&self) -> usize { self.major }
+    #[inline(always)]
     pub fn minor(&self) -> usize { self.minor }
+    #[inline(always)]
     pub fn glsl_major(&self) -> usize { self.glsl_major }
+    #[inline(always)]
     pub fn glsl_minor(&self) -> usize { self.glsl_minor }
+    #[inline(always)]
 
+    #[inline(always)]
     pub fn extenstions(&self) -> &Vector<String> { &self.extenstions }
 
+    #[inline(always)]
     pub fn clear_color(&self) -> &[f32; 4] { &self.clear_color }
 
+    #[inline(always)]
     pub fn max_anisotropy(&self) -> usize { self.max_anisotropy }
+    #[inline(always)]
     pub fn max_textures(&self) -> usize { self.max_textures }
+    #[inline(always)]
     pub fn max_vertex_textures(&self) -> usize { self.max_vertex_textures }
+    #[inline(always)]
     pub fn max_texture_size(&self) -> usize { self.max_texture_size }
+    #[inline(always)]
     pub fn max_cube_texture_size(&self) -> usize { self.max_cube_texture_size }
+    #[inline(always)]
     pub fn max_render_buffer_size(&self) -> usize { self.max_render_buffer_size }
 
+    #[inline(always)]
     pub fn max_uniforms(&self) -> usize { self.max_uniforms }
+    #[inline(always)]
     pub fn max_varyings(&self) -> usize { self.max_varyings }
+    #[inline(always)]
     pub fn max_attributes(&self) -> usize { self.max_attributes }
 
+    #[inline(always)]
     pub fn precision(&self) -> &'static str { self.precision }
 
-    pub fn enabled_attributes(&self) -> &Vector<bool> { &self.enabled_attributes }
+    #[inline(always)]
+    pub fn enabled_attributes(&self) -> &[bool] { &self.enabled_attributes }
 
+    #[inline(always)]
     pub fn viewport_x(&self) -> usize { self.viewport_x }
+    #[inline(always)]
     pub fn viewport_y(&self) -> usize { self.viewport_y }
+    #[inline(always)]
     pub fn viewport_width(&self) -> usize { self.viewport_width }
+    #[inline(always)]
     pub fn viewport_height(&self) -> usize { self.viewport_height }
 
+    #[inline(always)]
     pub fn blending(&self) -> Blending { self.blending }
+    #[inline(always)]
     pub fn cull_face(&self) -> CullFace { self.cull_face }
+    #[inline(always)]
     pub fn depth_func(&self) -> Depth { self.depth_func }
 
+    #[inline(always)]
     pub fn blending_disabled(&self) -> bool { self.blending_disabled }
+    #[inline(always)]
     pub fn cull_face_disabled(&self) -> bool { self.cull_face_disabled }
+    #[inline(always)]
     pub fn depth_test_disabled(&self) -> bool { self.depth_test_disabled }
 
+    #[inline(always)]
     pub fn clear_depth(&self) -> f64 { self.clear_depth }
+    #[inline(always)]
     pub fn clear_stencil(&self) -> isize { self.clear_stencil }
 
+    #[inline(always)]
     pub fn depth_write(&self) -> bool { self.depth_write }
+    #[inline(always)]
     pub fn depth_range_near(&self) -> f64 { self.depth_range_near }
+    #[inline(always)]
     pub fn depth_range_far(&self) -> f64 { self.depth_range_far }
+    #[inline(always)]
     pub fn line_width(&self) -> f32 { self.line_width }
 
-    pub fn current_array_buffer(&self) -> GLuint { self.current_array_buffer }
-    pub fn current_element_array_buffer(&self) -> GLuint { self.current_element_array_buffer }
+    #[inline(always)]
+    pub fn current_buffer(&self) -> GLuint { self.current_buffer }
+    #[inline(always)]
+    pub fn current_buffer_kind(&self) -> GLenum { self.current_buffer_kind }
 
+    #[inline(always)]
     pub fn current_vertex_array(&self) -> GLuint { self.current_vertex_array }
+    #[inline(always)]
     pub fn current_framebuffer(&self) -> GLuint { self.current_framebuffer }
+    #[inline(always)]
     pub fn current_renderbuffer(&self) -> GLuint { self.current_renderbuffer }
 
+    #[inline(always)]
     pub fn current_program(&self) -> GLuint { self.current_program }
+    #[inline(always)]
     pub fn force(&self) -> bool { self.force }
 
+    #[inline(always)]
     pub fn texture_index(&self) -> GLuint { self.texture_index }
+    #[inline(always)]
     pub fn current_texture_index(&self) -> GLint { self.current_texture_index }
+    #[inline(always)]
     pub fn current_texture(&self) -> GLuint { self.current_texture }
 
 
+    #[inline(always)]
     pub fn init(&mut self) -> &mut Self {
         self.reset()
     }
 
+    #[inline]
     pub fn reset(&mut self) -> &mut Self {
 
         self.version.clear();
@@ -266,9 +311,8 @@ impl Context {
         self.depth_range_far = 1f64;
         self.line_width = 1f32;
 
-        self.current_array_buffer = 0;
-        self.current_element_array_buffer = 0;
-
+        self.current_buffer = 0;
+        self.current_buffer_kind = 0;
         self.current_vertex_array = 0;
         self.current_framebuffer = 0;
         self.current_renderbuffer = 0;
@@ -286,6 +330,7 @@ impl Context {
         self
     }
 
+    #[inline]
     pub fn soft_reset(&mut self) -> &mut Self {
 
         self.clear_color[0] = 0f32;
@@ -301,6 +346,7 @@ impl Context {
         self
     }
 
+    #[inline]
     fn gl_reset(&mut self) -> &mut Self {
         unsafe {
             gl::FrontFace(gl::CCW);
@@ -331,10 +377,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_viewport_unchecked(&self, x: usize, y: usize, width: usize, height: usize) -> &Self {
         unsafe { gl::Viewport(x as GLint, y as GLint, width as GLsizei, height as GLsizei); }
         self
     }
+    #[inline(always)]
     pub fn set_viewport(&mut self, x: usize, y: usize, width: usize, height: usize) -> &mut Self {
         if
             self.viewport_x != x ||
@@ -351,10 +399,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_clear_depth_unchecked(&self, clear_depth: f64) -> &Self {
         unsafe { gl::ClearDepth(clear_depth); }
         self
     }
+    #[inline(always)]
     pub fn set_clear_depth(&mut self, clear_depth: f64) -> &mut Self {
         if self.clear_depth != clear_depth {
             self.clear_depth = clear_depth;
@@ -363,10 +413,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_clear_stencil_unchecked(&self, clear_stencil: isize) -> &Self {
         unsafe { gl::ClearStencil(clear_stencil as GLint); }
         self
     }
+    #[inline(always)]
     pub fn set_clear_stencil(&mut self, clear_stencil: isize) -> &mut Self {
         if self.clear_stencil != clear_stencil {
             self.clear_stencil = clear_stencil;
@@ -375,10 +427,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_depth_write_unchecked(&self, depth_write: bool) -> &Self {
         unsafe { gl::DepthMask(if depth_write {gl::TRUE} else {gl::FALSE}); }
         self
     }
+    #[inline(always)]
     pub fn set_depth_write(&mut self, depth_write: bool) -> &mut Self {
         if self.depth_write != depth_write {
             self.depth_write = depth_write;
@@ -387,10 +441,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_depth_range_unchecked(&self, near: f64, far: f64) -> &Self {
         unsafe { gl::DepthRange(near, far); }
         self
     }
+    #[inline(always)]
     pub fn set_depth_range(&mut self, near: f64, far: f64) -> &mut Self {
         if near != near && far != far {
             self.depth_range_near = near;
@@ -400,10 +456,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_line_width_unchecked(&self, line_width: f32) -> &Self {
         unsafe { gl::LineWidth(line_width as GLfloat); }
         self
     }
+    #[inline(always)]
     pub fn set_line_width(&mut self, line_width: f32) -> &mut Self {
         if self.line_width != line_width {
             self.line_width = line_width;
@@ -412,12 +470,14 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     fn enable_blending(&mut self) {
         if self.blending_disabled {
             unsafe { gl::Enable(gl::BLEND); }
             self.blending_disabled = false;
         }
     }
+    #[inline]
     pub fn set_blending_unchecked(&mut self, blending: Blending) -> &mut Self {
         match blending {
             Blending::Additive => {
@@ -455,6 +515,7 @@ impl Context {
         }
         self
     }
+    #[inline(always)]
     pub fn set_blending(&mut self, blending: Blending) -> &mut Self {
         if self.blending != blending {
             self.blending = blending;
@@ -463,12 +524,14 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     fn enable_cull_face(&mut self) {
         if self.cull_face_disabled {
             unsafe { gl::Enable(gl::CULL_FACE); }
             self.cull_face_disabled = false;
         }
     }
+    #[inline]
     pub fn set_cull_face_unchecked(&mut self, cull_face: CullFace) -> &mut Self {
         match cull_face {
             CullFace::Back => {
@@ -490,6 +553,7 @@ impl Context {
         }
         self
     }
+    #[inline(always)]
     pub fn set_cull_face(&mut self, cull_face: CullFace) -> &mut Self {
         if self.cull_face != cull_face {
             self.cull_face = cull_face;
@@ -498,12 +562,14 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     fn enable_depth_test(&mut self) {
         if self.depth_test_disabled {
             unsafe { gl::Enable(gl::DEPTH_TEST); }
             self.depth_test_disabled = false;
         }
     }
+    #[inline]
     pub fn set_depth_func_unchecked(&mut self, depth_func: Depth) -> &mut Self {
         match depth_func {
             Depth::Never => {
@@ -545,6 +611,7 @@ impl Context {
         }
         self
     }
+    #[inline(always)]
     pub fn set_depth_func(&mut self, depth_func: Depth) -> &mut Self {
         if self.depth_func != depth_func {
             self.depth_func = depth_func;
@@ -553,10 +620,12 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn set_clear_color_unchecked(&self, color: &[f32; 4]) -> &Self {
         unsafe { gl::ClearColor(color[0], color[1], color[2], color[3]); }
         self
     }
+    #[inline(always)]
     pub fn set_clear_color(&mut self, color: &[f32; 4]) -> &mut Self {
         if &self.clear_color != color {
             self.clear_color[0] = color[0];
@@ -568,6 +637,7 @@ impl Context {
         self
     }
 
+    #[inline(always)]
     pub fn clear(&mut self, color: bool, depth: bool, stencil: bool) -> &mut Self {
         let mut bits: GLbitfield = 0;
 
@@ -584,11 +654,13 @@ impl Context {
         self.clear_bits(bits)
     }
 
+    #[inline(always)]
     pub fn clear_bits(&mut self, bits: GLenum) -> &mut Self {
         unsafe { gl::Clear(bits); }
         self
     }
 
+    #[inline(always)]
     pub fn enable_attribute(&mut self, index: usize, force: bool) -> bool {
         let ref mut value = self.enabled_attributes[index];
 
@@ -600,6 +672,7 @@ impl Context {
             false
         }
     }
+    #[inline(always)]
     pub fn disable_attribute(&mut self, index: usize) -> bool {
         let ref mut value = self.enabled_attributes[index];
 
@@ -612,6 +685,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     fn disable_attributes(&mut self) {
         let mut index: GLuint = 0;
         let ref mut enabled_attributes = self.enabled_attributes;
@@ -625,53 +699,37 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        match buffer.kind() {
-            gl::ARRAY_BUFFER => self.set_array_buffer(buffer, force),
-            gl::ELEMENT_ARRAY_BUFFER => self.set_element_array_buffer(buffer, force),
-            _ => false,
+        let id = buffer.id();
+        let kind = buffer.kind().to_gl();
+
+        if force || self.current_buffer != id {
+            self.disable_attributes();
+            unsafe { gl::BindBuffer(kind, id); }
+            self.current_buffer = id;
+            self.current_buffer_kind = kind;
+            true
+        } else {
+            false
         }
     }
+    #[inline(always)]
     pub fn remove_buffer(&mut self, force: bool) -> bool {
-        if force || self.current_array_buffer != 0 || self.current_element_array_buffer != 0 {
+        if force || self.current_buffer != 0 {
             self.disable_attributes();
             unsafe {
-                gl::BindBuffer(gl::ARRAY_BUFFER, 0 as GLuint);
-                gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0 as GLuint);
+                gl::BindBuffer(self.current_buffer_kind, 0 as GLuint);
             }
-            self.current_array_buffer = 0;
-            self.current_element_array_buffer = 0;
+            self.current_buffer = 0;
+            self.current_buffer_kind = 0;
             true
         } else {
             false
         }
     }
 
-    fn set_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.id();
-
-        if force || self.current_array_buffer != id {
-            self.disable_attributes();
-            unsafe { gl::BindBuffer(gl::ARRAY_BUFFER, id); }
-            self.current_array_buffer = id;
-            true
-        } else {
-            false
-        }
-    }
-    fn set_element_array_buffer(&mut self, buffer: &Buffer, force: bool) -> bool {
-        let id = buffer.id();
-
-        if force || self.current_element_array_buffer != id {
-            self.disable_attributes();
-            unsafe { gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, id); }
-            self.current_element_array_buffer = id;
-            true
-        } else {
-            false
-        }
-    }
-
+    #[inline(always)]
     pub fn set_attrib_pointer(
         &mut self, location: GLuint, item_size: GLint, kind: GLenum, stride: GLsizei, offset: GLint, force: bool
     ) -> bool {
@@ -692,6 +750,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_vertex_array(&mut self, vertex_array: &VertexArray, force: bool) -> bool {
         let id = vertex_array.id();
 
@@ -703,6 +762,7 @@ impl Context {
             false
         }
     }
+    #[inline(always)]
     pub fn remove_vertex_array(&mut self, force: bool) -> bool {
         if force || self.current_vertex_array != 0 {
             unsafe { gl::BindVertexArray(0); }
@@ -713,6 +773,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_framebuffer(&mut self, framebuffer: &Framebuffer, force: bool) -> bool {
         let id = framebuffer.id();
 
@@ -725,6 +786,7 @@ impl Context {
             false
         }
     }
+    #[inline(always)]
     pub fn remove_framebuffer(&mut self, force: bool) -> bool {
         if force || self.current_framebuffer != 0 {
             unsafe { gl::BindFramebuffer(gl::FRAMEBUFFER, 0); }
@@ -736,6 +798,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_renderbuffer(&mut self, renderbuffer: &Renderbuffer, force: bool) -> bool {
         let id = renderbuffer.id();
 
@@ -747,6 +810,7 @@ impl Context {
             false
         }
     }
+    #[inline(always)]
     pub fn remove_renderbuffer(&mut self, force: bool) -> bool {
         if force || self.current_renderbuffer != 0 {
             unsafe { gl::BindRenderbuffer(gl::RENDERBUFFER, 0); }
@@ -757,6 +821,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_texture(&mut self, location: GLint, texture: &Texture, force: bool) -> bool {
         let id = texture.id();
         let index = self.texture_index;
@@ -781,6 +846,7 @@ impl Context {
             false
         }
     }
+    #[inline(always)]
     pub fn remove_texture(&mut self, force: bool) -> bool {
         if force || self.current_texture != 0 {
             self.texture_index = 0;
@@ -792,6 +858,7 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn set_program(&mut self, program: &Program, force: bool) -> bool {
         let id = program.id();
 
@@ -812,6 +879,7 @@ impl Context {
 
         true
     }
+    #[inline(always)]
     pub fn remove_program(&mut self, force: bool) -> bool {
         if force || self.current_program != 0 {
             self.current_program = 0;
@@ -831,25 +899,52 @@ impl Context {
         true
     }
 
+    #[inline(always)]
     pub fn new_buffer(&self) -> Buffer {
         Buffer::new()
     }
+    #[inline(always)]
     pub fn new_framebuffer(&self) -> Framebuffer {
         Framebuffer::new()
     }
+    #[inline(always)]
     pub fn new_program(&self) -> Program {
         Program::new()
     }
+    #[inline(always)]
     pub fn new_renderbuffer(&self) -> Renderbuffer {
         Renderbuffer::new()
     }
+    #[inline(always)]
     pub fn new_texture(&self) -> Texture {
         Texture::new()
     }
+    #[inline(always)]
     pub fn new_vertex_array(&self) -> VertexArray {
         VertexArray::new()
     }
 
+    #[inline(always)]
+    pub fn draw_arrays(&self, mode: DrawMode, first: usize, count: usize) -> &Self {
+        unsafe {
+            gl::DrawArrays(mode.to_gl(), first as GLint, count as GLsizei);
+        }
+        self
+    }
+    #[inline(always)]
+    pub fn draw_elements<T>(&self, mode: DrawMode, count: usize, kind: IndexKind, indices: &T) -> &Self {
+        unsafe {
+            gl::DrawElements(
+                mode.to_gl(),
+                count as GLint,
+                kind.to_gl(),
+                mem::transmute(indices)
+            );
+        }
+        self
+    }
+
+    #[inline(always)]
     pub fn has_extenstion(&self, string: &str) -> bool {
         match self.extenstions.iter().position(|e| e == string) {
             Some(_) => true,
@@ -857,10 +952,12 @@ impl Context {
         }
     }
 
+    #[inline(always)]
     pub fn error(&self) -> GLenum {
         unsafe { gl::GetError() }
     }
 
+    #[inline]
     fn gl_info(&mut self) {
         let mut vs_high_float_precision: GLint = 0;
         let mut vs_high_float_range: GLint = 0;
@@ -1000,6 +1097,7 @@ impl Context {
     }
 }
 
+#[inline]
 unsafe fn string_from_ptr(ptr: *const u8, string: &mut String) {
     let mut i = 0isize;
     loop {
@@ -1014,6 +1112,7 @@ unsafe fn string_from_ptr(ptr: *const u8, string: &mut String) {
     }
 }
 
+#[inline]
 unsafe fn parse_extenstions(extenstions: &mut Vector<String>, major_version: usize) {
     if major_version > 2 {
         let mut count = 0;
@@ -1034,6 +1133,7 @@ unsafe fn parse_extenstions(extenstions: &mut Vector<String>, major_version: usi
     }
 }
 
+#[inline]
 fn glsl_version(major: usize, minor: usize, glsl_major: &mut usize, glsl_minor: &mut usize) {
     if major <= 3 && minor <= 2 {
         *glsl_major = 1;

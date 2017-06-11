@@ -10,7 +10,10 @@ extern crate gl;
 use std::f32::consts::PI;
 
 use gl::types::*;
-use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
+use gl_context::{
+    Context, TextureKind, TextureFormat, TextureWrap, FilterMode,
+    BufferTarget, DrawMode, Usage
+};
 use prng::Prng;
 use rng::Rng;
 
@@ -115,7 +118,7 @@ fn main() {
     context.set_vertex_array(&vertex_array, false);
 
     let mut buffer = context.new_buffer();
-    buffer.set(gl::ARRAY_BUFFER, &DATA, 4, gl::STATIC_DRAW);
+    buffer.set(BufferTarget::Array, &DATA, 4, Usage::StaticDraw);
 
     context.remove_vertex_array(false);
 
@@ -186,7 +189,7 @@ fn main() {
         program.set_uniform("projection", &mut context, &perspective_matrix, false);
         program.set_uniform_unchecked("model_view", &mut context, &model_view, false);
 
-        unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4); }
+        context.draw_arrays(DrawMode::TriangleStrip, 0, 4);
 
         match window.swap_buffers() {
             Ok(_) => (),

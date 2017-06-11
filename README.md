@@ -10,7 +10,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::Context;
+use gl_context::{Context, BufferTarget, Usage, DrawMode};
 
 
 static VERTEX_DATA: [GLfloat; 6] = [
@@ -40,24 +40,23 @@ static FS_SRC: &'static str = "
 ";
 
 fn main() {
-    let mut context = Context::new();
+    let events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_depth_buffer(24)
-        .build()
+        .build(&events_loop)
         .unwrap();
 
-    unsafe {
-        match window.make_current() {
-            Ok(_) => {
-                gl::load_with(|s| window.get_proc_address(s) as *const _);
-            }
-            Err(e) => panic!("{:?}", e),
-        }
-    }
+    let mut context = Context::new();
 
-    // should not be called until gl is ready
+    unsafe {
+        window.make_current()
+    }.unwrap();
+
+    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+
     context.init();
 
+    println!("{:?}", context.version());
     println!(
         "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
         context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
@@ -65,35 +64,35 @@ fn main() {
 
     let mut program = context.new_program();
     program.set(VS_SRC, FS_SRC);
-
     context.set_program(&program, false);
 
     let vertex_array = context.new_vertex_array();
     context.set_vertex_array(&vertex_array, false);
 
     let mut buffer = context.new_buffer();
-    buffer.set(gl::ARRAY_BUFFER, &VERTEX_DATA, 0, gl::STATIC_DRAW);
+    buffer.set(BufferTarget::Array, &VERTEX_DATA, 0, Usage::StaticDraw);
 
     program.set_attribute("position", &mut context, &buffer, 0, false);
 
     let mut playing = true;
     while playing {
-        for event in window.poll_events() {
+        events_loop.poll_events(|event| {
             match event {
-                glutin::Event::Closed => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => {
                     playing = false;
                 },
-                glutin::Event::Resized(w, h) => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
                     context.set_viewport(0, 0, w as usize, h as usize);
                 },
                 _ => (),
             }
-        }
+        });
 
         context.clear(true, true, true);
         context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
 
-        unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
+
+        context.draw_arrays(DrawMode::Triangles, 0, 3);
 
         match window.swap_buffers() {
             Ok(_) => (),

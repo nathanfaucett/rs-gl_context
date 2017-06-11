@@ -34,6 +34,127 @@ pub enum FilterMode {
     None,
     Linear,
 }
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum DrawMode {
+    Points,
+    LineStrip,
+    LineLoop,
+    Lines,
+    LineStripAdjacency,
+    LineAdjacency,
+    TriangleStrip,
+    TriangleFan,
+    Triangles,
+    TriangleStripAdjacency,
+    TrianglesAdjacency,
+    Patches,
+}
+
+impl DrawMode {
+    #[inline]
+    pub fn to_gl(&self) -> GLenum {
+        match self {
+            &DrawMode::Points => gl::POINTS,
+            &DrawMode::LineStrip => gl::LINE_STRIP,
+            &DrawMode::LineLoop => gl::LINE_LOOP,
+            &DrawMode::Lines => gl::LINES,
+            &DrawMode::LineStripAdjacency => gl::LINE_STRIP_ADJACENCY,
+            &DrawMode::LineAdjacency => gl::LINES_ADJACENCY,
+            &DrawMode::TriangleStrip => gl::TRIANGLE_STRIP,
+            &DrawMode::TriangleFan => gl::TRIANGLE_FAN,
+            &DrawMode::Triangles => gl::TRIANGLES,
+            &DrawMode::TriangleStripAdjacency => gl::TRIANGLE_STRIP_ADJACENCY,
+            &DrawMode::TrianglesAdjacency => gl::TRIANGLES_ADJACENCY,
+            &DrawMode::Patches => gl::PATCHES,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum IndexKind {
+    UnsignedByte,
+    UnsignedShort,
+    UnsignedInt,
+}
+
+impl IndexKind {
+    #[inline]
+    pub fn to_gl(&self) -> GLenum {
+        match self {
+            &IndexKind::UnsignedByte => gl::UNSIGNED_BYTE,
+            &IndexKind::UnsignedShort => gl::UNSIGNED_SHORT,
+            &IndexKind::UnsignedInt => gl::UNSIGNED_INT,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum Usage {
+    StreamDraw, StreamRead, StreamCopy,
+    StaticDraw, StaticRead, StaticCopy,
+    DynamicDraw, DynamicRead, DynamicCopy,
+}
+
+impl Usage {
+    #[inline]
+    pub fn to_gl(&self) -> GLenum {
+        match self {
+            &Usage::StreamDraw => gl::STREAM_DRAW,
+            &Usage::StreamRead => gl::STREAM_READ,
+            &Usage::StreamCopy => gl::STREAM_COPY,
+
+            &Usage::StaticDraw => gl::STATIC_DRAW,
+            &Usage::StaticRead => gl::STATIC_READ,
+            &Usage::StaticCopy => gl::STATIC_COPY,
+
+            &Usage::DynamicDraw => gl::DYNAMIC_DRAW,
+            &Usage::DynamicRead => gl::DYNAMIC_READ,
+            &Usage::DynamicCopy => gl::DYNAMIC_COPY,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum BufferTarget {
+    Array,
+    AtomicCounter,
+    CopyRead,
+    CopyWrite,
+    DispatchIndirect,
+    DrawIndirect,
+    ElementArray,
+    PixelPack,
+    PixelUnpack,
+    Query,
+    ShaderStorage,
+    Texture,
+    TransformFeedback,
+    Uniform,
+}
+
+impl BufferTarget {
+    #[inline]
+    pub fn to_gl(&self) -> GLenum {
+        match self {
+            &BufferTarget::Array => gl::ARRAY_BUFFER,
+            &BufferTarget::AtomicCounter => gl::ATOMIC_COUNTER_BUFFER,
+            &BufferTarget::CopyRead => gl::COPY_READ_BUFFER,
+            &BufferTarget::CopyWrite => gl::COPY_WRITE_BUFFER,
+            &BufferTarget::DispatchIndirect => gl::DISPATCH_INDIRECT_BUFFER,
+            &BufferTarget::DrawIndirect => gl::DRAW_INDIRECT_BUFFER,
+            &BufferTarget::ElementArray => gl::ELEMENT_ARRAY_BUFFER,
+            &BufferTarget::PixelPack => gl::PIXEL_PACK_BUFFER,
+            &BufferTarget::PixelUnpack => gl::PIXEL_UNPACK_BUFFER,
+            &BufferTarget::Query => gl::QUERY_BUFFER,
+            &BufferTarget::ShaderStorage => gl::SHADER_STORAGE_BUFFER,
+            &BufferTarget::Texture => gl::TEXTURE_BUFFER,
+            &BufferTarget::TransformFeedback => gl::TRANSFORM_FEEDBACK_BUFFER,
+            &BufferTarget::Uniform => gl::UNIFORM_BUFFER,
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub enum Attachment {
     Color,

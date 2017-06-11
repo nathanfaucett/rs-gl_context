@@ -4,14 +4,15 @@ use core::ops::Drop;
 use gl;
 use gl::types::*;
 
+use super::enums::{BufferTarget, Usage};
 
-#[derive(Debug)]
+
 pub struct Buffer {
     id: GLuint,
 
     stride: usize,
-    kind: GLenum,
-    draw: GLenum,
+    kind: BufferTarget,
+    usage: Usage,
 
     size: usize,
     kind_size: usize,
@@ -19,6 +20,7 @@ pub struct Buffer {
 }
 
 impl Drop for Buffer {
+    #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
             unsafe { gl::DeleteBuffers(1, &self.id); }
@@ -28,6 +30,7 @@ impl Drop for Buffer {
 
 impl Buffer {
 
+    #[inline]
     pub fn new() -> Self {
         Buffer {
             id: {
@@ -37,8 +40,8 @@ impl Buffer {
             },
 
             stride: 0,
-            kind: 0,
-            draw: 0,
+            kind: BufferTarget::Array,
+            usage: Usage::StaticDraw,
 
             size: 0,
             kind_size: 0,
@@ -46,30 +49,40 @@ impl Buffer {
         }
     }
 
+    #[inline(always)]
     pub fn id(&self) -> GLuint { self.id }
 
+    #[inline(always)]
     pub fn stride(&self) -> usize { self.stride }
-    pub fn kind(&self) -> GLenum { self.kind }
-    pub fn draw(&self) -> GLenum { self.draw }
+    #[inline(always)]
+    pub fn kind(&self) -> BufferTarget { self.kind }
+    #[inline(always)]
+    pub fn usage(&self) -> Usage { self.usage }
 
+    #[inline(always)]
     pub fn size(&self) -> usize { self.size }
+    #[inline(always)]
     pub fn kind_size(&self) -> usize { self.kind_size }
+    #[inline(always)]
     pub fn length(&self) -> usize { self.length }
 
-    pub fn set<T>(&mut self, kind: GLenum, array: &[T], stride: usize, draw: GLenum) -> &mut Self {
+    #[inline]
+    pub fn set<T>(&mut self, kind: BufferTarget, array: &[T], stride: usize, usage: Usage) -> &mut Self {
         let length = array.len();
         let kind_size = mem::size_of::<T>();
         let size = kind_size * length;
 
         unsafe {
+            let kind = kind.to_gl();
+            let usage = usage.to_gl();
             gl::BindBuffer(kind, self.id);
-    		gl::BufferData(kind, size as GLsizeiptr, array.as_ptr() as *const _, draw);
+    		gl::BufferData(kind, size as GLsizeiptr, array.as_ptr() as *const _, usage);
     		gl::BindBuffer(kind, 0);
         };
 
         self.stride = stride;
         self.kind = kind;
-        self.draw = draw;
+        self.usage = usage;
 
         self.size = size;
         self.kind_size = kind_size;

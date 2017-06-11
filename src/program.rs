@@ -21,7 +21,6 @@ use buffer::Buffer;
 use context::Context;
 
 
-#[derive(Debug)]
 pub struct Program {
     id: GLuint,
     uniforms: HashMap<String, Box<Uniform>>,
@@ -29,6 +28,7 @@ pub struct Program {
 }
 
 impl Drop for Program {
+    #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
             unsafe { gl::DeleteProgram(self.id); }
@@ -38,6 +38,7 @@ impl Drop for Program {
 
 impl Program {
 
+    #[inline(always)]
     pub fn new() -> Self {
         Program {
             id: 0,
@@ -46,18 +47,24 @@ impl Program {
         }
     }
 
+    #[inline(always)]
     pub fn id(&self) -> GLuint { self.id }
 
+    #[inline(always)]
     pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(&String::from(name))}
+    #[inline(always)]
     pub fn uniforms(&self) -> &HashMap<String, Box<Uniform>> {&self.uniforms}
+    #[inline(always)]
     pub fn uniforms_mut(&mut self) -> &mut HashMap<String, Box<Uniform>> {&mut self.uniforms}
 
+    #[inline(always)]
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
             Some(ref mut uniform) => uniform.set(context, value, force),
             None => panic!("No uniform named {:?} found", name),
         }
     }
+    #[inline(always)]
     pub fn set_uniform_unchecked(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
         match self.uniforms.get_mut(name) {
             Some(ref mut uniform) => uniform.set_unchecked(context, value, force),
@@ -65,10 +72,14 @@ impl Program {
         }
     }
 
+    #[inline(always)]
     pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(&String::from(name))}
+    #[inline(always)]
     pub fn attributes(&self) -> &HashMap<String, Box<Attribute>> {&self.attributes}
+    #[inline(always)]
     pub fn attributes_mut(&mut self) -> &mut HashMap<String, Box<Attribute>> {&mut self.attributes}
 
+    #[inline]
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
         match self.attributes.get(name) {
             Some(ref attribute) => attribute.set(context, buffer, offset, force),
@@ -76,12 +87,14 @@ impl Program {
         }
     }
 
+    #[inline]
     pub fn set(&mut self, vertex: &str, fragment: &str) -> &mut Self {
         let vs = compile_shader(vertex, gl::VERTEX_SHADER);
         let fs = compile_shader(fragment, gl::FRAGMENT_SHADER);
         let id = link_program(vs, fs);
         self.set_program_id(id)
     }
+    #[inline]
     pub fn set_mutiple(&mut self, vertex: &[&str], fragment: &[&str]) -> &mut Self {
         let vs = compile_shaders(vertex, gl::VERTEX_SHADER);
         let fs = compile_shaders(fragment, gl::FRAGMENT_SHADER);
@@ -89,6 +102,7 @@ impl Program {
         self.set_program_id(id)
     }
 
+    #[inline]
     pub fn set_program_id(&mut self, id: GLuint) -> &mut Self {
         {
             let ref mut uniforms = self.uniforms;
@@ -109,6 +123,7 @@ impl Program {
     }
 }
 
+#[inline]
 fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>) {
     let mut max_length = 0;
     let mut active_length = 0;
@@ -159,6 +174,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
     }
 }
 
+#[inline]
 fn string_from_utf8(vec: Vector<u8>) -> Result<String, Utf8Error> {
     match str::from_utf8(&vec) {
         Ok(s) => Ok(String::from(s)),
@@ -166,6 +182,7 @@ fn string_from_utf8(vec: Vector<u8>) -> Result<String, Utf8Error> {
     }
 }
 
+#[inline]
 fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attribute>>) {
     let mut max_length = 0;
     let mut active_length = 0;
@@ -199,6 +216,7 @@ fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attrib
     }
 }
 
+#[inline]
 pub fn link_program(vertex_shader: GLuint, fragment_shader: GLuint) -> GLuint {
     let program = unsafe { gl::CreateProgram() };
 
@@ -215,6 +233,7 @@ pub fn link_program(vertex_shader: GLuint, fragment_shader: GLuint) -> GLuint {
     }
     check_program_status(program)
 }
+#[inline]
 pub fn check_program_status(program: GLuint) -> GLuint {
     let mut status = 0;
     unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut status) };
@@ -231,6 +250,7 @@ pub fn check_program_status(program: GLuint) -> GLuint {
     program
 }
 
+#[inline]
 pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
     let shader = unsafe { gl::CreateShader(kind) };
 
@@ -242,6 +262,7 @@ pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
     }
     check_shader_status(shader)
 }
+#[inline]
 pub fn compile_shaders(sources: &[&str], kind: GLenum) -> GLuint {
     let shader = unsafe { gl::CreateShader(kind) };
 
@@ -255,6 +276,7 @@ pub fn compile_shaders(sources: &[&str], kind: GLenum) -> GLuint {
     }
     check_shader_status(shader)
 }
+#[inline]
 pub fn check_shader_status(shader: GLuint) -> GLuint {
     let mut status = 0;
     unsafe { gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut status) };

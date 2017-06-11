@@ -9,13 +9,13 @@ use context::Context;
 use enums::{TextureFormat, TextureWrap, TextureKind, FilterMode};
 
 
-#[derive(Debug)]
 pub struct Texture {
     id: GLuint,
     kind: GLenum,
 }
 
 impl Drop for Texture {
+    #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
             unsafe { gl::DeleteTextures(1, &self.id); }
@@ -87,6 +87,7 @@ macro_rules! generate_mipmap {
 
 impl Texture {
 
+    #[inline(always)]
     pub fn new() -> Self {
         Texture {
             id: {
@@ -98,10 +99,13 @@ impl Texture {
         }
     }
 
+    #[inline(always)]
     pub fn id(&self) -> GLuint { self.id }
 
+    #[inline(always)]
     pub fn kind(&self) -> GLenum { self.kind }
 
+    #[inline]
     pub fn set_data2d<T>(
         &mut self,
         context: &Context,
@@ -143,6 +147,7 @@ impl Texture {
         self
     }
 
+    #[inline]
     pub fn set_null2d(
         &mut self,
         context: &Context,

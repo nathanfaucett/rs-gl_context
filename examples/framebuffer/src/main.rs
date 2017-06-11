@@ -4,7 +4,10 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode, Attachment};
+use gl_context::{
+    Context, TextureKind, TextureFormat, TextureWrap, FilterMode,
+    Attachment, Usage, DrawMode, BufferTarget
+};
 
 
 static FB_VS:  &'static str = "
@@ -119,7 +122,7 @@ fn main() {
     context.set_vertex_array(&fb_vertex_array, false);
 
     let mut fb_buffer = context.new_buffer();
-    fb_buffer.set(gl::ARRAY_BUFFER, &FB_VERTEX_DATA, 4, gl::STATIC_DRAW);
+    fb_buffer.set(BufferTarget::Array, &FB_VERTEX_DATA, 4, Usage::StaticDraw);
 
 
     let mut tr_program = context.new_program();
@@ -129,7 +132,7 @@ fn main() {
     context.set_vertex_array(&tr_vertex_array, false);
 
     let mut tr_buffer = context.new_buffer();
-    tr_buffer.set(gl::ARRAY_BUFFER, &TR_VERTEX_DATA, 0, gl::STATIC_DRAW);
+    tr_buffer.set(BufferTarget::Array, &TR_VERTEX_DATA, 0, Usage::StaticDraw);
 
 
     let mut playing = true;
@@ -176,7 +179,7 @@ fn main() {
 
         tr_program.set_attribute("position", &mut context, &tr_buffer, 0, false);
 
-        unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
+        context.draw_arrays(DrawMode::Triangles, 0, 3);
 
 
         context.remove_framebuffer(false);
@@ -192,8 +195,7 @@ fn main() {
         fb_program.set_attribute("uv", &mut context, &fb_buffer, 2, false);
         fb_program.set_uniform("diffuse", &mut context, &fb_texture, false);
 
-        unsafe { gl::DrawArrays(gl::TRIANGLE_STRIP, 0, 4); }
-
+        context.draw_arrays(DrawMode::TriangleStrip, 0, 4);
 
         match window.swap_buffers() {
             Ok(_) => (),
