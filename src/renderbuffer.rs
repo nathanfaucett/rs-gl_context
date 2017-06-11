@@ -1,11 +1,10 @@
-use core::mem;
 use core::ops::Drop;
 
 use gl;
 use gl::types::*;
 
 use context::Context;
-use enums::{gl_kind, TextureKind};
+use enums::{TextureFormat, Attachment};
 
 
 #[derive(Debug)]
@@ -16,7 +15,7 @@ pub struct Renderbuffer {
 impl Drop for Renderbuffer {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteRenderbuffers(1, mem::transmute(&self.id)); }
+            unsafe { gl::DeleteRenderbuffers(1, &self.id); }
         }
     }
 }
@@ -33,13 +32,14 @@ impl Renderbuffer {
     }
     pub fn id(&self) -> GLuint { self.id }
 
-    pub fn set(&self, _: &Context, kind: TextureKind, width: usize, height: usize) {
-        let kind = gl_kind(kind);
+    pub fn set(&self, _: &Context, format: TextureFormat, attachment: Attachment, width: usize, height: usize) {
+        let format = format.to_gl();
+        let attachment = attachment.to_gl();
 
         unsafe {
             gl::BindRenderbuffer(gl::RENDERBUFFER, self.id);
-            gl::RenderbufferStorage(gl::RENDERBUFFER, kind, width as GLint, height as GLint);
-            gl::FramebufferRenderbuffer(gl::FRAMEBUFFER, gl::DEPTH_ATTACHMENT, gl::RENDERBUFFER, self.id);
+            gl::RenderbufferStorage(gl::RENDERBUFFER, format, width as GLint, height as GLint);
+            gl::FramebufferRenderbuffer(gl::FRAMEBUFFER, attachment, gl::RENDERBUFFER, self.id);
             gl::BindRenderbuffer(gl::RENDERBUFFER, 0);
         }
     }

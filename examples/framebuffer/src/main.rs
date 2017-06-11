@@ -4,7 +4,7 @@ extern crate gl_context;
 
 
 use gl::types::*;
-use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode};
+use gl_context::{Context, TextureKind, TextureFormat, TextureWrap, FilterMode, Attachment};
 
 
 static FB_VS:  &'static str = "
@@ -69,20 +69,19 @@ static TR_VERTEX_DATA: [GLfloat; 6] = [
 
 
 fn main() {
+    let events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_depth_buffer(24)
-        .build()
+        .build(&events_loop)
         .unwrap();
+
     let mut context = Context::new();
 
     unsafe {
-        match window.make_current() {
-            Ok(_) => {
-                gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-            },
-            Err(e) => panic!("{:?}", e),
-        }
-    }
+        window.make_current()
+    }.unwrap();
+
+    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
     context.init();
 
@@ -107,10 +106,10 @@ fn main() {
 
 
     let mut framebuffer = context.new_framebuffer();
-    framebuffer.set(&context, &fb_texture, &[gl::COLOR_ATTACHMENT0], 0);
+    framebuffer.set(&context, &fb_texture, &[Attachment::Color], 0);
 
     let renderbuffer = context.new_renderbuffer();
-    renderbuffer.set(&context, TextureKind::DepthComponent, 256, 256);
+    renderbuffer.set(&context, TextureFormat::DepthComponent, Attachment::Depth, 256, 256);
 
 
     let mut fb_program = context.new_program();
@@ -139,12 +138,12 @@ fn main() {
     static SIZE: usize = 8;
     while playing {
 
-        for event in window.poll_events() {
+        events_loop.poll_events(|event| {
             match event {
-                glutin::Event::Closed => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => {
                     playing = false;
                 },
-                glutin::Event::Resized(w, h) => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
                     width = w as usize;
                     height = h as usize;
 
@@ -158,12 +157,12 @@ fn main() {
                         FilterMode::None,
                         false
                     );
-                    framebuffer.set(&context, &fb_texture, &[gl::COLOR_ATTACHMENT0], 0);
-                    renderbuffer.set(&context, TextureKind::DepthComponent, width / SIZE, height / SIZE);
+                    framebuffer.set(&context, &fb_texture, &[Attachment::Color], 0);
+                    renderbuffer.set(&context, TextureFormat::DepthComponent, Attachment::Depth, width / SIZE, height / SIZE);
                 },
                 _ => (),
             }
-        }
+        });
 
         context.set_framebuffer(&framebuffer, false);
         context.set_renderbuffer(&renderbuffer, false);

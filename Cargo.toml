@@ -13,8 +13,8 @@ homepage = "https://github.com/nathanfaucett/rs-gl_context"
 exclude = ["examples"]
 
 [dependencies]
-gl = "*"
-regex = "0.2"
+gl = {version = "*"}
+regex = {version = "*"}
 collection_traits = {git = "https://github.com/nathanfaucett/rs-collection_traits.git"}
 hash_map = {git = "https://github.com/nathanfaucett/rs-hash_map.git"}
 vector = {git = "https://github.com/nathanfaucett/rs-vector.git"}

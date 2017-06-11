@@ -6,7 +6,7 @@ use gl;
 use gl::types::*;
 
 use context::Context;
-use enums::{gl_format, gl_kind, gl_wrap, TextureFormat, TextureWrap, TextureKind, FilterMode};
+use enums::{TextureFormat, TextureWrap, TextureKind, FilterMode};
 
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ pub struct Texture {
 impl Drop for Texture {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteTextures(1, mem::transmute(&self.id)); }
+            unsafe { gl::DeleteTextures(1, &self.id); }
         }
     }
 }
@@ -44,7 +44,7 @@ macro_rules! texture_options {
         $gl_mag_filter: ident,
         $gl_min_filter: ident
     ) => (
-        let $gl_pot = is_pot($width as usize) && is_pot($height as usize);
+        let $gl_pot = $width.is_power_of_two() && $height.is_power_of_two();
 
         let $gl_major = $context.major();
         let $gl_minor = $context.minor();
@@ -60,9 +60,9 @@ macro_rules! texture_options {
             $gl_min_filter = if $gl_pot && $generate_mipmap {gl::LINEAR_MIPMAP_LINEAR} else {gl::LINEAR};
         }
 
-        let $gl_format = gl_format($format) ;
-        let $gl_wrap = gl_wrap($wrap) as GLint;
-        let $gl_kind = gl_kind($kind);
+        let $gl_format = $format.to_gl();
+        let $gl_wrap = $wrap.to_gl() as GLint;
+        let $gl_kind = $kind.to_gl();
     )
 }
 
@@ -123,7 +123,10 @@ impl Texture {
         unsafe {
             gl::BindTexture(gl::TEXTURE_2D, self.id as GLuint);
 
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl_format as GLint, width as GLsizei, height as GLsizei, 0, gl_format, gl_kind, mem::transmute(data.as_ptr()));
+            gl::TexImage2D(
+                gl::TEXTURE_2D, 0, gl_format as GLint, width as GLsizei, height as GLsizei,
+                0, gl_format, gl_kind, mem::transmute(data.as_ptr())
+            );
 
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl_mag_filter as GLint);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl_min_filter as GLint);
@@ -176,19 +179,4 @@ impl Texture {
 
         self
     }
-}
-
-fn is_pot(x: usize) -> bool {
-    (x & (-(x as isize) as usize)) == x
-}
-
-#[test]
-fn test_is_pot() {
-    assert_eq!(is_pot(2), true);
-    assert_eq!(is_pot(4), true);
-    assert_eq!(is_pot(8), true);
-    assert_eq!(is_pot(64), true);
-    assert_eq!(is_pot(1024), true);
-    assert_eq!(is_pot(11), false);
-    assert_eq!(is_pot(456), false);
 }

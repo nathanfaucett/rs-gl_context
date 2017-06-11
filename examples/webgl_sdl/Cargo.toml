@@ -1,19 +1,19 @@
 [package]
-name = "webgl"
+name = "webgl_sdl"
 version = "0.1.0"
 authors = ["nathanfaucett <nathanfaucett@gmail.com>"]
 
 [package.metadata.android]
-label = "webgl"
+label = "webgl_sdl"
 
 [[bin]]
-name = "webgl"
+name = "webgl_sdl"
 path = "src/main.rs"
 
 [dependencies]
 gl = "*"
-glutin = "*"
-time = "*"
+sdl2 = "*"
+time = "0.1"
 webplatform = {git = "https://github.com/tcr/rust-webplatform"}
 
 gl_context = {path = "../.."}

@@ -21,7 +21,7 @@ pub struct Buffer {
 impl Drop for Buffer {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteBuffers(1, mem::transmute(&self.id)); }
+            unsafe { gl::DeleteBuffers(1, &self.id); }
         }
     }
 }
@@ -63,7 +63,7 @@ impl Buffer {
 
         unsafe {
             gl::BindBuffer(kind, self.id);
-    		gl::BufferData(kind, size as GLsizeiptr, mem::transmute(array.as_ptr()), draw);
+    		gl::BufferData(kind, size as GLsizeiptr, array.as_ptr() as *const _, draw);
     		gl::BindBuffer(kind, 0);
         };
 

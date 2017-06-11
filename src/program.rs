@@ -3,13 +3,14 @@ use collections::string::String;
 
 use core::str::{self, Utf8Error};
 use core::ptr;
-use core::mem;
 use core::ops::Drop;
 use core::any::Any;
 
 use collection_traits::*;
 use hash_map::HashMap;
 use vector::Vector;
+
+use regex::Regex;
 
 use gl;
 use gl::types::*;
@@ -138,9 +139,20 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
         };
 
         if name.chars().nth(name.len() - 1).expect("Unexpected empty uniform name") == ']' {
-            name.pop();
-            name.pop();
-            name.pop();
+            let new_name = match
+                Regex::new(r"(.*)\[\d+\]")
+                    .expect("regex failed to compile")
+                    .captures(&name) {
+                     Some(cap) => match cap.get(1) {
+                        Some(name) => Some(String::from(name.as_str())),
+                        None => None,
+                    },
+                    None => None,
+                };
+
+            if let Some(value) = new_name {
+                name = value;
+            }
         }
 
         uniforms.insert(name.clone(), new_uniform(name, kind, size as usize, location));
@@ -223,10 +235,9 @@ pub fn compile_shader(source: &str, kind: GLenum) -> GLuint {
     let shader = unsafe { gl::CreateShader(kind) };
 
     unsafe {
-        let ptr: *const u8 = source.as_bytes().as_ptr();
-        let ptr_u8: *const u8 = mem::transmute(ptr);
+        let ptr: *const GLchar = source.as_bytes().as_ptr() as *const GLchar;
         let len = source.len() as GLint;
-        gl::ShaderSource(shader, 1, mem::transmute(&ptr_u8), &len);
+        gl::ShaderSource(shader, 1, &ptr, &len);
         gl::CompileShader(shader);
     }
     check_shader_status(shader)
@@ -236,10 +247,9 @@ pub fn compile_shaders(sources: &[&str], kind: GLenum) -> GLuint {
 
     unsafe {
         for source in sources.iter() {
-            let ptr: *const u8 = source.as_bytes().as_ptr();
-            let ptr_u8: *const u8 = mem::transmute(ptr);
+            let ptr: *const GLchar = source.as_bytes().as_ptr() as *const GLchar;
             let len = source.len() as GLint;
-            gl::ShaderSource(shader, 1, mem::transmute(&ptr_u8), &len);
+            gl::ShaderSource(shader, 1, &ptr, &len);
             gl::CompileShader(shader);
         }
     }

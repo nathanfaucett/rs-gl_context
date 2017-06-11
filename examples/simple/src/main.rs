@@ -34,20 +34,19 @@ static FS_SRC: &'static str = "
 ";
 
 fn main() {
+    let events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_depth_buffer(24)
-        .build()
+        .build(&events_loop)
         .unwrap();
+
     let mut context = Context::new();
 
     unsafe {
-        match window.make_current() {
-            Ok(_) => {
-                gl::load_with(|s| window.get_proc_address(s) as *const _);
-            }
-            Err(e) => panic!("{:?}", e),
-        }
-    }
+        window.make_current()
+    }.unwrap();
+
+    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
     context.init();
 
@@ -71,17 +70,17 @@ fn main() {
 
     let mut playing = true;
     while playing {
-        for event in window.poll_events() {
+        events_loop.poll_events(|event| {
             match event {
-                glutin::Event::Closed => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => {
                     playing = false;
                 },
-                glutin::Event::Resized(w, h) => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
                     context.set_viewport(0, 0, w as usize, h as usize);
                 },
                 _ => (),
             }
-        }
+        });
 
         context.clear(true, true, true);
         context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);

@@ -1,4 +1,3 @@
-use core::mem;
 use core::ops::Drop;
 
 use gl;
@@ -13,7 +12,7 @@ pub struct VertexArray {
 impl Drop for VertexArray {
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe { gl::DeleteVertexArrays(1, mem::transmute(&self.id)); }
+            unsafe { gl::DeleteVertexArrays(1, &self.id); }
         }
     }
 }

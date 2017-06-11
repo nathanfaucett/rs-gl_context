@@ -64,21 +64,19 @@ static DATA: [GLfloat; 16] = [
 ];
 
 fn main() {
+    let events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_depth_buffer(24)
-        .build()
+        .build(&events_loop)
         .unwrap();
 
     let mut random = Prng::new();
 
     unsafe {
-        match window.make_current() {
-            Ok(_) => {
-                gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-            },
-            Err(e) => panic!("{:?}", e),
-        }
-    }
+        window.make_current()
+    }.unwrap();
+
+    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
     let mut context = Context::new();
 
@@ -144,24 +142,24 @@ fn main() {
         ms += dt;
         last_time = current_time;
 
-        for event in window.poll_events() {
+        events_loop.poll_events(|event| {
             match event {
-                glutin::Event::Closed => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => {
                     playing = false;
                 },
-                glutin::Event::Resized(w, h) => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
                     width = w as i32;
                     height = h as i32;
                     mat4::perspective(&mut perspective_matrix, 45f32 * TO_RADS, w as f32 / h as f32, 0.1f32, 1024f32);
                     context.set_viewport(0, 0, w as usize, h as usize);
                 },
-                glutin::Event::MouseMoved(x, y) => {
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::MouseMoved(x, y), .. } => {
                     offset[0] = (((x - (width / 2)) as f32) / width as f32) * 2f32;
                     offset[1] = ((((height / 2) - y) as f32) / width as f32) * 2f32;
                 },
                 _ => (),
             }
-        }
+        });
 
         color[0] = (ms * 0.000001f32).cos();
         color[1] = (ms * 0.0001f32).sin();

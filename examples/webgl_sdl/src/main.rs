@@ -1,14 +1,20 @@
-#![feature(drop_types_in_const)]
 #![feature(libc)]
+#![feature(drop_types_in_const)]
+#![feature(link_args)]
 
 
-extern crate gl;
-extern crate glutin;
-extern crate gl_context;
+#[link_args = "-s USE_SDL=2"]
+extern {}
+
+
+extern crate libc;
 #[macro_use]
 extern crate webplatform;
 extern crate time;
-extern crate libc;
+
+extern crate gl;
+extern crate sdl2;
+extern crate gl_context;
 
 
 use std::rc::Rc;
@@ -25,30 +31,36 @@ static VERTEX_DATA: [GLfloat; 6] = [
 ];
 
 static VS_SRC: &'static str = "
-    #version 140
-
-    in vec2 position;
+    attribute vec2 position;
+    uniform vec2 offset;
 
     void main() {
-        gl_Position = vec4(position, 0, 1.0);
+        gl_Position = vec4(offset + position, 0, 1.0);
     }
 ";
 
 static FS_SRC: &'static str = "
-    #version 140
-
-    out vec4 out_color;
-
     void main() {
-        out_color = vec4(1.0, 1.0, 1.0, 1.0);
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
 ";
 
+fn find_sdl_gl_driver() -> Option<u32> {
+    for (index, item) in sdl2::render::drivers().enumerate() {
+        if item.name == "opengl" ||
+           item.name == "opengles"||
+           item.name == "opengles2" {
+            return Some(index as u32);
+        }
+    }
+    None
+}
+
 
 pub struct App {
-    events_loop: RefCell<glutin::EventsLoop>,
-    window: glutin::Window,
-    context: RefCell<Context>,
+    event_pump: sdl2::EventPump,
+    canvas: sdl2::render::Canvas<sdl2::video::Window>,
+    context: Context,
     program: Program,
     vertex_array: VertexArray,
     buffer: Buffer,
@@ -62,19 +74,23 @@ impl App {
     pub fn new() -> Self {
         let width = 960usize;
         let height = 640usize;
-        let events_loop = glutin::EventsLoop::new();
-        let window = glutin::WindowBuilder::new()
-            .with_depth_buffer(24)
-            .build(&events_loop)
-            .unwrap();
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+        let event_pump = sdl_context.event_pump().unwrap();
+
+        video_subsystem.gl_attr().set_depth_size(24);
+
+        let window = video_subsystem.window("WebGL", width as u32, height as u32)
+            .resizable()
+            .position_centered()
+            .opengl()
+            .build()
+            .expect("Failed to create window with given parameters");
+        let mut canvas = window.into_canvas().build().unwrap();
 
         let mut context = Context::new();
 
-        unsafe {
-            window.make_current()
-        }.unwrap();
-
-        gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+        gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
 
         context.init();
 
@@ -83,7 +99,6 @@ impl App {
             "OpenGL version: {:?}.{:?}, GLSL version {:?}.{:?}0",
             context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
         );
-
         let mut program = context.new_program();
         program.set(VS_SRC, FS_SRC);
         context.set_program(&program, false);
@@ -96,10 +111,12 @@ impl App {
 
         program.set_attribute("position", &mut context, &buffer, 0, false);
 
+        context.set_viewport(0, 0, width, height);
+
         App {
-            events_loop: RefCell::new(events_loop),
-            window: window,
-            context: RefCell::new(context),
+            event_pump: event_pump,
+            canvas: canvas,
+            context: context,
             program: program,
             vertex_array: vertex_array,
             buffer: buffer,
@@ -111,46 +128,52 @@ impl App {
     }
 
     pub fn resize(&mut self) {
-        //let (w, h) = {
-        //    let window = self.renderer.window().unwrap();
-        //    let size = window.size();
-        //    (size.0 as usize, size.1 as usize)
-        //};
+        /*
+        let (w, h) = {
+            let window = self.renderer.window().unwrap();
+            let size = window.size();
+            (size.0 as usize, size.1 as usize)
+        };
 
-        //if w != self.width || h != self.height {
-            //self.set_size(w, h);
-        //}
+        if w != self.width || h != self.height {
+            self.set_size(w, h);
+        }
+        */
     }
     fn set_size(&mut self, w: usize, h: usize) {
-        //let _ = self.renderer.window_mut().unwrap().set_size(w as u32, h as u32);
         self.width = w;
         self.height = h;
-        self.context.borrow_mut().set_viewport(0, 0, w, h);
+        self.context.set_viewport(0, 0, w, h);
     }
 
     pub fn update(&mut self) {
-        let events_loop = self.events_loop.borrow();
-        let mut context = self.context.borrow_mut();
+        let current_time = time::now();
+        let dt = (current_time - self.last_time).num_nanoseconds().unwrap() as f64 * 0.000001f64;
 
-        events_loop.poll_events(|event| {
+        self.ms += dt;
+        self.last_time = current_time;
+
+        for event in self.event_pump.poll_iter() {
             match event {
-                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => {},
-                glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
-                    //context.set_viewport(0, 0, w as usize, h as usize);
-                },
+                sdl2::event::Event::Quit{..} => {},
                 _ => (),
             }
-        });
+        }
 
-        context.clear(true, true, true);
-        context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
+        self.resize();
+
+        self.context.clear(true, true, true);
+        self.context.set_clear_color(&[0.3, 0.3, 0.3, 1.0]);
+
+        let offset = [
+            ((self.ms * 0.001f64).sin() * 0.5f64) as f32,
+            ((self.ms * 0.001f64).cos() * 0.5f64) as f32,
+        ];
+        self.program.set_uniform_unchecked("offset", &mut self.context, &offset, false);
 
         unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
 
-        match self.window.swap_buffers() {
-            Ok(_) => (),
-            Err(e) => panic!("{:?}", e),
-        }
+        self.canvas.present();
     }
 }
 
