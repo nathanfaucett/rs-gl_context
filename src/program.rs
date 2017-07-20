@@ -1,14 +1,12 @@
 use alloc::boxed::Box;
-use collections::string::String;
+use alloc::string::String;
+use alloc::vec::Vec;
+use alloc::btree_map::BTreeMap;
 
 use core::str::{self, Utf8Error};
 use core::ptr;
 use core::ops::Drop;
 use core::any::Any;
-
-use collection_traits::*;
-use hash_map::HashMap;
-use vector::Vector;
 
 use regex::Regex;
 
@@ -23,8 +21,8 @@ use context::Context;
 
 pub struct Program {
     id: GLuint,
-    uniforms: HashMap<String, Box<Uniform>>,
-    attributes: HashMap<String, Box<Attribute>>,
+    uniforms: BTreeMap<String, Box<Uniform>>,
+    attributes: BTreeMap<String, Box<Attribute>>,
 }
 
 impl Drop for Program {
@@ -42,8 +40,8 @@ impl Program {
     pub fn new() -> Self {
         Program {
             id: 0,
-            uniforms: HashMap::new(),
-            attributes: HashMap::new(),
+            uniforms: BTreeMap::new(),
+            attributes: BTreeMap::new(),
         }
     }
 
@@ -53,9 +51,9 @@ impl Program {
     #[inline(always)]
     pub fn has_uniform(&self, name: &str) -> bool {self.uniforms.contains_key(&String::from(name))}
     #[inline(always)]
-    pub fn uniforms(&self) -> &HashMap<String, Box<Uniform>> {&self.uniforms}
+    pub fn uniforms(&self) -> &BTreeMap<String, Box<Uniform>> {&self.uniforms}
     #[inline(always)]
-    pub fn uniforms_mut(&mut self) -> &mut HashMap<String, Box<Uniform>> {&mut self.uniforms}
+    pub fn uniforms_mut(&mut self) -> &mut BTreeMap<String, Box<Uniform>> {&mut self.uniforms}
 
     #[inline(always)]
     pub fn set_uniform(&mut self, name: &str, context: &mut Context, value: &Any, force: bool) -> bool {
@@ -75,9 +73,9 @@ impl Program {
     #[inline(always)]
     pub fn has_attribute(&self, name: &str) -> bool {self.attributes.contains_key(&String::from(name))}
     #[inline(always)]
-    pub fn attributes(&self) -> &HashMap<String, Box<Attribute>> {&self.attributes}
+    pub fn attributes(&self) -> &BTreeMap<String, Box<Attribute>> {&self.attributes}
     #[inline(always)]
-    pub fn attributes_mut(&mut self) -> &mut HashMap<String, Box<Attribute>> {&mut self.attributes}
+    pub fn attributes_mut(&mut self) -> &mut BTreeMap<String, Box<Attribute>> {&mut self.attributes}
 
     #[inline]
     pub fn set_attribute(&mut self, name: &str, context: &mut Context, buffer: &Buffer, offset: usize, force: bool) -> bool {
@@ -124,7 +122,7 @@ impl Program {
 }
 
 #[inline]
-fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>) {
+fn parse_uniforms(program: GLuint, uniforms: &mut BTreeMap<String, Box<Uniform>>) {
     let mut max_length = 0;
     let mut active_length = 0;
 
@@ -138,7 +136,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
         let mut size = 0;
         let mut kind = 0;
 
-        let mut buf = Vector::with_capacity(max_length as usize);
+        let mut buf = Vec::with_capacity(max_length as usize);
         let buf_ptr = buf.as_mut_ptr() as *mut GLchar;
         let location;
 
@@ -175,7 +173,7 @@ fn parse_uniforms(program: GLuint, uniforms: &mut HashMap<String, Box<Uniform>>)
 }
 
 #[inline]
-fn string_from_utf8(vec: Vector<u8>) -> Result<String, Utf8Error> {
+fn string_from_utf8(vec: Vec<u8>) -> Result<String, Utf8Error> {
     match str::from_utf8(&vec) {
         Ok(s) => Ok(String::from(s)),
         Err(e) => Err(e),
@@ -183,7 +181,7 @@ fn string_from_utf8(vec: Vector<u8>) -> Result<String, Utf8Error> {
 }
 
 #[inline]
-fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attribute>>) {
+fn parse_attributes(program: GLuint, attributes: &mut BTreeMap<String, Box<Attribute>>) {
     let mut max_length = 0;
     let mut active_length = 0;
 
@@ -197,7 +195,7 @@ fn parse_attributes(program: GLuint, attributes: &mut HashMap<String, Box<Attrib
         let mut size = 0;
         let mut kind = 0;
 
-        let mut buf = Vector::with_capacity(max_length as usize);
+        let mut buf = Vec::with_capacity(max_length as usize);
         let buf_ptr = buf.as_mut_ptr() as *mut GLchar;
         let location;
 
@@ -240,7 +238,7 @@ pub fn check_program_status(program: GLuint) -> GLuint {
     if status != (gl::TRUE as GLint) {
         let mut len: GLint = 0;
         unsafe { gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len); }
-        let mut buf = Vector::with_capacity(len as usize);
+        let mut buf = Vec::with_capacity(len as usize);
         unsafe {
             buf.set_len(len as usize);
             gl::GetProgramInfoLog(program, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);
@@ -283,7 +281,7 @@ pub fn check_shader_status(shader: GLuint) -> GLuint {
     if status != (gl::TRUE as GLint) {
         let mut len = 0;
         unsafe { gl::GetShaderiv(shader, gl::INFO_LOG_LENGTH, &mut len); }
-        let mut buf = Vector::with_capacity(len as usize);
+        let mut buf = Vec::with_capacity(len as usize);
         unsafe {
             buf.set_len(len as usize);
             gl::GetShaderInfoLog(shader, len, ptr::null_mut(), buf.as_mut_ptr() as *mut GLchar);

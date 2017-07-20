@@ -1,10 +1,9 @@
+use alloc::vec::Vec;
+
 use core::ops::Drop;
 
 use gl;
 use gl::types::*;
-
-use collection_traits::*;
-use vector::Vector;
 
 use context::Context;
 use texture::Texture;
@@ -42,7 +41,7 @@ impl Framebuffer {
     pub fn set(&mut self, _: &Context, texture: &Texture, buffers: &[Attachment], level: GLint) {
         let texture_id = texture.id();
 
-        let mut gl_enums = Vector::with_capacity(buffers.len());
+        let mut gl_enums = Vec::with_capacity(buffers.len());
         for i in 0..buffers.len() {
             gl_enums.push(buffers[i].to_gl());
         }

@@ -3,7 +3,9 @@ extern crate glutin;
 extern crate gl_context;
 
 
+use glutin::GlContext;
 use gl::types::*;
+
 use gl_context::{Context, BufferTarget, Usage, DrawMode};
 
 
@@ -34,19 +36,21 @@ static FS_SRC: &'static str = "
 ";
 
 fn main() {
-    let events_loop = glutin::EventsLoop::new();
+    let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
-        .with_depth_buffer(24)
-        .build(&events_loop)
-        .unwrap();
+        .with_title("Simple")
+        .with_dimensions(1024, 768);
+    let ctx = glutin::ContextBuilder::new()
+        .with_vsync(true);
+    let gl_window = glutin::GlWindow::new(window, ctx, &events_loop).unwrap();
 
     let mut context = Context::new();
 
     unsafe {
-        window.make_current()
-    }.unwrap();
+        gl_window.make_current().unwrap();
+    }
 
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
 
     context.init();
 
@@ -76,6 +80,7 @@ fn main() {
                     playing = false;
                 },
                 glutin::Event::WindowEvent { event: glutin::WindowEvent::Resized(w, h), .. } => {
+                    gl_window.resize(w, h);
                     context.set_viewport(0, 0, w as usize, h as usize);
                 },
                 _ => (),
@@ -88,9 +93,6 @@ fn main() {
 
         context.draw_arrays(DrawMode::Triangles, 0, 3);
 
-        match window.swap_buffers() {
-            Ok(_) => (),
-            Err(e) => panic!("{:?}", e),
-        }
+        gl_window.swap_buffers().unwrap();
     }
 }

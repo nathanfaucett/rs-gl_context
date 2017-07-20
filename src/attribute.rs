@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use collections::string::String;
+use alloc::string::String;
 
 use gl;
 use gl::types::*;

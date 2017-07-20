@@ -9,6 +9,7 @@ extern crate gl;
 
 use std::f32::consts::PI;
 
+use glutin::GlContext;
 use gl::types::*;
 use gl_context::{
     Context, TextureKind, TextureFormat, TextureWrap, FilterMode,
@@ -67,21 +68,23 @@ static DATA: [GLfloat; 16] = [
 ];
 
 fn main() {
-    let events_loop = glutin::EventsLoop::new();
+    let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
-        .with_depth_buffer(24)
-        .build(&events_loop)
-        .unwrap();
-
-    let mut random = Prng::new();
-
-    unsafe {
-        window.make_current()
-    }.unwrap();
-
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+        .with_title("Complex")
+        .with_dimensions(1024, 768);
+    let ctx = glutin::ContextBuilder::new()
+        .with_vsync(true);
+    let gl_window = glutin::GlWindow::new(window, ctx, &events_loop).unwrap();
 
     let mut context = Context::new();
+
+    unsafe {
+        gl_window.make_current().unwrap();
+    }
+
+    gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
+
+    let context = Context::new();
 
     context.init();
 
@@ -91,6 +94,7 @@ fn main() {
         context.major(), context.minor(), context.glsl_major(), context.glsl_minor()
     );
 
+    let mut random = Prng::new();
     let mut program = context.new_program();
     program.set(VS, FS);
 
@@ -154,11 +158,17 @@ fn main() {
                     width = w as i32;
                     height = h as i32;
                     mat4::perspective(&mut perspective_matrix, 45f32 * TO_RADS, w as f32 / h as f32, 0.1f32, 1024f32);
+                    gl_window.resize(w, h);
                     context.set_viewport(0, 0, w as usize, h as usize);
                 },
-                glutin::Event::WindowEvent { event: glutin::WindowEvent::MouseMoved(x, y), .. } => {
-                    offset[0] = (((x - (width / 2)) as f32) / width as f32) * 2f32;
-                    offset[1] = ((((height / 2) - y) as f32) / width as f32) * 2f32;
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::MouseMoved{ position, .. }, .. } => {
+                    let (x, y) = position;
+                    let x = x as f32;
+                    let y = y as f32;
+                    let w = width as f32;
+                    let h = height as f32;
+                    offset[0] = ((x - (w / 2f32)) / w) * 2f32;
+                    offset[1] = (((h / 2f32) - y) / w) * 2f32;
                 },
                 _ => (),
             }
@@ -191,9 +201,6 @@ fn main() {
 
         context.draw_arrays(DrawMode::TriangleStrip, 0, 4);
 
-        match window.swap_buffers() {
-            Ok(_) => (),
-            Err(e) => panic!("{:?}", e),
-        }
+        gl_window.swap_buffers().unwrap();
     }
 }

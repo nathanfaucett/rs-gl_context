@@ -14,6 +14,7 @@ extern crate libc;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+use glutin::GlContext;
 use gl::types::*;
 use gl_context::{Program, VertexArray, Buffer, Context};
 
@@ -62,19 +63,22 @@ impl App {
     pub fn new() -> Self {
         let width = 960usize;
         let height = 640usize;
-        let events_loop = glutin::EventsLoop::new();
+
+        let mut events_loop = glutin::EventsLoop::new();
         let window = glutin::WindowBuilder::new()
-            .with_depth_buffer(24)
-            .build(&events_loop)
-            .unwrap();
+            .with_title("Simple")
+            .with_dimensions(width, height);
+        let ctx = glutin::ContextBuilder::new()
+            .with_vsync(true);
+        let gl_window = glutin::GlWindow::new(window, ctx, &events_loop).unwrap();
 
         let mut context = Context::new();
 
         unsafe {
-            window.make_current()
-        }.unwrap();
+            gl_window.make_current().unwrap();
+        }
 
-        gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+        gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
 
         context.init();
 
@@ -147,10 +151,7 @@ impl App {
 
         unsafe { gl::DrawArrays(gl::TRIANGLES, 0, 3); }
 
-        match self.window.swap_buffers() {
-            Ok(_) => (),
-            Err(e) => panic!("{:?}", e),
-        }
+        gl_window.swap_buffers().unwrap();
     }
 }
 
